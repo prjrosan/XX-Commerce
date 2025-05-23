@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XX-Commerce Clone</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ff6a00;
+      padding: 10px 20px;
+      color: white;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .search-bar input {
+      padding: 6px;
+      width: 300px;
+    }
+
+    .search-bar button {
+      padding: 6px 12px;
+      background-color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-links a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+    }
+
+    .main-section {
+      display: flex;
+      margin: 10px;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #f2f2f2;
+      padding: 15px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .banner img {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: cover;
+    }
+
+    .products {
+      padding: 20px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+    }
+
+    .product-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .main-section {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">XX-Commerce</div>
+    <div class="search-bar">
+      <input type="text" placeholder="Search products">
+      <button>Search</button>
+    </div>
+    <div class="nav-links">
+      <a href="#">EN</a>
+      <a href="#signin" id="signin-link">Sign In</a>
+      <a href="#">Orders</a>
+      <a href="#">Cart</a>
+    </div>
+  </header>
+
+  <div class="main-section">
+    <aside class="sidebar">
+      <ul>
+        <li>Consumer Electronics</li>
+        <li>Apparel</li>
+        <li>Home & Garden</li>
+        <li>Machinery</li>
+        <li>Beauty & Personal Care</li>
+        <li>Tools & Hardware</li>
+      </ul>
+    </aside>
+    <div class="banner">
+      <img src="https://via.placeholder.com/1000x300" alt="Main Promo Banner">
+    </div>
+  </div>
+
+  <section class="products">
+    <h2>Recommended for you</h2>
+    <div class="product-grid">
+      <div class="product-card">
+        <img src="https://via.placeholder.com/150" alt="Product">
+        <p>Wireless Earbuds</p>
+        <p>$9.99</p>
+      </div>
+      <div class="product-card">
+        <img src="https://via.placeholder.com/150" alt="Product">
+        <p>Smartwatch</p>
+        <p>$15.49</p>
+      </div>
+      <div class="product-card">
+        <img src="https://via.placeholder.com/150" alt="Product">
+        <p>Bluetooth Speaker</p>
+        <p>$25.00</p>
+      </div>
+      <div class="product-card">
+        <img src="https://via.placeholder.com/150" alt="Product">
+        <p>LED Bulbs (10-pack)</p>
+        <p>$12.99</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 XX-Commerce. All rights reserved.
+  </footer>
+  <!-- Sign In Modal -->
+<div id="signin-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+  <div style="background:white; padding:20px; border-radius:8px; width:300px; position:relative;">
+    <h2 style="color:#ff6a00;">Sign In</h2>
+    <form>
+      <input type="text" placeholder="Email or Username" style="width:100%; padding:10px; margin-bottom:10px;"><br>
+      <input type="password" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px;"><br>
+      <button type="submit" style="width:100%; padding:10px; background:#ff6a00; color:white; border:none;">Sign In</button>
+    </form>
+    <button onclick="closeModal()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:18px;">&times;</button>
+  </div>
+</div>
+<script>
+  // Show the sign-in modal
+  document.getElementById('signin-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('signin-modal').style.display = 'flex';
+  });
+
+  // Close the modal
+  function closeModal() {
+    document.getElementById('signin-modal').style.display = 'none';
+  }
+</script>
+</body>
+</html>
