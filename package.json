@@ -1,0 +1,28 @@
+{
+  "name": "xx-commerce",
+  "version": "1.0.0",
+  "description": "Minimalistic, real-time e-commerce web app",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "start": "cd server && npm start"
+  },
+  "keywords": [
+    "e-commerce",
+    "react",
+    "typescript",
+    "real-time"
+  ],
+  "author": "XX-Commerce Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^7.8.0"
+  }
+}
