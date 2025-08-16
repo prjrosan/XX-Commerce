@@ -1,8 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/auth'
 import { useCartStore } from './store/cart'
 import Layout from './components/Layout'
+import LoadingScreen from './components/LoadingScreen'
+import ApiUnavailable from './components/ApiUnavailable'
 import HomePage from './pages/HomePage'
 import ProductsPage from './pages/ProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
@@ -21,16 +23,75 @@ import SellerRoute from './components/SellerRoute'
 function App() {
   const { user, checkAuth } = useAuthStore()
   const { loadCart } = useCartStore()
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [hasError, setHasError] = useState(false)
+  const [apiUnavailable, setApiUnavailable] = useState(false)
 
   useEffect(() => {
-    checkAuth()
+    const initializeApp = async () => {
+      try {
+        setIsInitializing(true)
+        await checkAuth()
+        setIsInitializing(false)
+      } catch (error) {
+        console.error('Failed to initialize app:', error)
+        // Check if it's an API connection error
+        if (error instanceof Error && (
+          error.message.includes('Network Error') || 
+          error.message.includes('ERR_NETWORK') ||
+          error.message.includes('fetch')
+        )) {
+          setApiUnavailable(true)
+        } else {
+          setHasError(true)
+        }
+        setIsInitializing(false)
+      }
+    }
+
+    initializeApp()
   }, [checkAuth])
 
   useEffect(() => {
-    if (user) {
-      loadCart()
+    if (user && !isInitializing) {
+      loadCart().catch(error => {
+        console.error('Failed to load cart:', error)
+      })
     }
-  }, [user, loadCart])
+  }, [user, loadCart, isInitializing])
+
+  // Show loading screen while initializing
+  if (isInitializing) {
+    return <LoadingScreen message="Initializing..." />
+  }
+
+  // Show API unavailable screen
+  if (apiUnavailable) {
+    return <ApiUnavailable />
+  }
+
+  // Show error screen if initialization failed
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Initialization Failed
+          </h1>
+          <p className="text-gray-600 mb-6">
+            We couldn't initialize the application. This might be due to network issues or server problems.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="btn btn-primary w-full"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Layout>

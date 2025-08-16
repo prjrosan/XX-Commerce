@@ -1,8 +1,26 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
+// Get API URL from environment or use fallbacks
+const getApiUrl = () => {
+  // Check for Vercel environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  
+  // Check if we're in production (Vercel)
+  if (window.location.hostname !== 'localhost') {
+    // You can set a default production API URL here
+    // For now, we'll use a placeholder that will show an error
+    return 'https://your-backend-api.com/api'
+  }
+  
+  // Local development fallback
+  return 'http://localhost:3001/api'
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  baseURL: getApiUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,6 +47,13 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    // Handle API connection errors gracefully
+    if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+      console.error('API Connection Error:', error)
+      toast.error('Unable to connect to server. Please check your internet connection.')
+      return Promise.reject(error)
+    }
+    
     const message = error.response?.data?.error || error.message || 'Something went wrong'
     
     // Don't show toast for auth errors (handled by components)
