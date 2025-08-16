@@ -73,9 +73,26 @@ export interface AuthRequest extends Request {
 }
 
 export interface WebSocketMessage {
-  type: 'cart_update' | 'order_update' | 'product_update';
+  type: 'cart_update' | 'order_update' | 'product_update' | 'join' | 'message' | 'typing' | 'system' | 'user_list';
   data: any;
   userId?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  username: string;
+  userRole: 'customer' | 'seller' | 'admin';
+  message: string;
+  timestamp: Date;
+  isAdmin: boolean;
+}
+
+export interface ChatUser {
+  id: string;
+  username: string;
+  userRole: string;
+  isOnline: boolean;
 }
 
 export interface LoginRequest {

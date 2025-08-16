@@ -17,7 +17,7 @@ interface ProductCustomizationFormProps {
 }
 
 export default function ProductCustomizationForm({
-  productId,
+  // productId,
   initialCustomization = {},
   onSave,
   onCancel
@@ -111,8 +111,9 @@ export default function ProductCustomizationForm({
         <h4 className="text-md font-semibold mb-4">Add New Customization Option</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Option Type</label>
+            <label htmlFor="option-type" className="block text-sm font-medium mb-2">Option Type</label>
             <select
+              id="option-type"
               value={newOption.type}
               onChange={(e) => setNewOption(prev => ({ ...prev, type: e.target.value }))}
               className="input w-full"
@@ -192,6 +193,7 @@ export default function ProductCustomizationForm({
                 <button
                   onClick={() => handleRemoveOption(type)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded"
+                  title={`Remove ${type} option`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, Filter } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Product, ApiResponse, ProductsResponse } from '../types'
 import { api } from '../lib/api'
 import ProductCard from '../components/ProductCard'
@@ -65,16 +64,20 @@ export default function ProductsPage() {
             className="input pl-10"
           />
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="input max-w-xs"
-        >
-          <option value="">All Categories</option>
-          <option value="electronics">Electronics</option>
-          <option value="clothing">Clothing</option>
-          <option value="books">Books</option>
-        </select>
+        <div>
+          <label htmlFor="category-filter" className="sr-only">Category</label>
+                    <select
+            id="category-filter"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="input max-w-xs"
+          >
+            <option value="">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="books">Books</option>
+          </select>
+        </div>
       </div>
 
       {/* Products Grid */}

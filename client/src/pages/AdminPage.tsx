@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Package, Users, ShoppingCart, Edit, Trash2, Settings } from 'lucide-react'
+import { Package, Users, ShoppingCart, Edit, Trash2, Settings } from 'lucide-react'
 import { api } from '../lib/api'
 import { Product } from '../types'
 import toast from 'react-hot-toast'
@@ -279,10 +279,11 @@ export default function AdminPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                                 Category *
                               </label>
                               <select
+                                id="category"
                                 name="category"
                                 value={editFormData.category}
                                 onChange={handleEditFormChange}

@@ -13,6 +13,7 @@ import orderRoutes from './routes/orders';
 import adminRoutes from './routes/admin';
 import paymentRoutes from './routes/payments';
 import stripePaymentRoutes from './routes/stripePayments';
+import chatRoutes from './routes/chat';
 import { authenticateToken } from './middleware/auth';
 import { WebSocketManager } from './services/websocket';
 
@@ -24,7 +25,6 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 3001;
-const host = process.env.HOST || '0.0.0.0';
 
 // Rate limiting
 const limiter = rateLimit({
@@ -57,7 +57,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root route for Railway
+// Root route
 app.get('/', (req, res) => {
   res.json({ 
     message: 'XX-Commerce API is running! 🚀',
@@ -80,6 +80,7 @@ app.use('/api/orders', authenticateToken, orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/stripe', stripePaymentRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

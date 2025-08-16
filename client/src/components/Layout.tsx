@@ -143,6 +143,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="text-center text-gray-500 text-sm">
             <p>&copy; 2024 XX-Commerce. All rights reserved.</p>
             <p className="mt-2">Built with React, TypeScript, and Node.js</p>
+            <p className="mt-2 text-primary-600 font-medium">Built by @PRJ_ROSAN</p>
           </div>
         </div>
       </footer>

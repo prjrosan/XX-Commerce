@@ -264,15 +264,15 @@ export default function SellerPanel() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 hover:bg-gray-100 rounded">
+                      <button className="p-1 hover:bg-gray-100 rounded" title="View product">
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="p-1 hover:bg-blue-100 rounded">
-                        <Edit className="h-4 w-4 text-blue-600" />
-                      </button>
-                      <button className="p-1 hover:bg-red-100 rounded">
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </button>
+                                              <button className="p-1 hover:bg-blue-100 rounded" title="Edit product">
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </button>
+                        <button className="p-1 hover:bg-red-100 rounded" title="Delete product">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </button>
                     </div>
                   </td>
                 </tr>
@@ -323,10 +323,10 @@ export default function SellerPanel() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 hover:bg-gray-100 rounded">
+                      <button className="p-1 hover:bg-gray-100 rounded" title="View order">
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="p-1 hover:bg-blue-100 rounded">
+                      <button className="p-1 hover:bg-blue-100 rounded" title="Edit order">
                         <Edit className="h-4 w-4 text-blue-600" />
                       </button>
                     </div>
@@ -374,10 +374,10 @@ export default function SellerPanel() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 hover:bg-gray-100 rounded">
+                      <button className="p-1 hover:bg-gray-100 rounded" title="View customer">
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="p-1 hover:bg-blue-100 rounded">
+                      <button className="p-1 hover:bg-blue-100 rounded" title="Edit customer">
                         <Edit className="h-4 w-4 text-blue-600" />
                       </button>
                     </div>
@@ -434,8 +434,8 @@ export default function SellerPanel() {
           <h3 className="text-lg font-semibold mb-4">Customization Options</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Option Type</label>
-              <select className="input w-full">
+              <label htmlFor="option-type" className="block text-sm font-medium mb-2">Option Type</label>
+              <select id="option-type" className="input w-full">
                 <option>Colors</option>
                 <option>Sizes</option>
                 <option>Materials</option>

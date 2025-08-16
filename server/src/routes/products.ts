@@ -7,12 +7,12 @@ import { requireAdmin, requireAdminOrSeller, authenticateToken, AuthRequest } fr
 
 const router = Router();
 
-// Demo products with Japanese Yen pricing
+// Demo products with Japanese Yen pricing (Super affordable - All under ¥1,500!)
 const demoProducts = [
   {
     title: "Premium Wireless Headphones",
     description: "High-quality wireless headphones with noise cancellation and 30-hour battery life. Perfect for music lovers and professionals.",
-    price: 15800, // ¥15,800
+    price: 1200, // ¥1,200 (super affordable!)
     category: "electronics",
     image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
     stock_quantity: 25,
@@ -25,7 +25,7 @@ const demoProducts = [
   {
     title: "Traditional Japanese Tea Set",
     description: "Beautiful handcrafted ceramic tea set with 6 cups and teapot. Perfect for traditional tea ceremonies.",
-    price: 8500, // ¥8,500
+    price: 800, // ¥800 (super affordable!)
     category: "home",
     image_url: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400",
     stock_quantity: 15,
@@ -38,7 +38,7 @@ const demoProducts = [
   {
     title: "Smart Fitness Watch",
     description: "Advanced fitness tracking with heart rate monitor, GPS, and water resistance. Track your workouts and health metrics.",
-    price: 22500, // ¥22,500
+    price: 1400, // ¥1,400 (super affordable!)
     category: "electronics",
     image_url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
     stock_quantity: 30,
@@ -51,7 +51,7 @@ const demoProducts = [
   {
     title: "Handmade Sushi Knife",
     description: "Professional-grade sushi knife made from high-carbon steel. Perfect for sushi chefs and cooking enthusiasts.",
-    price: 12500, // ¥12,500
+    price: 900, // ¥900 (super affordable!)
     category: "kitchen",
     image_url: "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=400",
     stock_quantity: 10,
@@ -64,7 +64,7 @@ const demoProducts = [
   {
     title: "Organic Matcha Green Tea",
     description: "Premium organic matcha powder from Uji, Japan. Rich in antioxidants and perfect for traditional tea preparation.",
-    price: 3200, // ¥3,200
+    price: 400, // ¥400 (super affordable!)
     category: "food",
     image_url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400",
     stock_quantity: 50,
@@ -77,7 +77,7 @@ const demoProducts = [
   {
     title: "Modern Minimalist Desk Lamp",
     description: "Sleek LED desk lamp with adjustable brightness and color temperature. Perfect for home office or study.",
-    price: 6800, // ¥6,800
+    price: 600, // ¥600 (super affordable!)
     category: "home",
     image_url: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400",
     stock_quantity: 20,
@@ -90,7 +90,7 @@ const demoProducts = [
   {
     title: "Yukata Kimono Set",
     description: "Traditional Japanese yukata with obi belt and geta sandals. Perfect for summer festivals and special occasions.",
-    price: 9800, // ¥9,800
+    price: 1000, // ¥1,000 (super affordable!)
     category: "clothing",
     image_url: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400",
     stock_quantity: 12,
@@ -103,7 +103,7 @@ const demoProducts = [
   {
     title: "Portable Bluetooth Speaker",
     description: "Waterproof portable speaker with 360-degree sound and 12-hour battery life. Perfect for outdoor activities.",
-    price: 4500, // ¥4,500
+    price: 700, // ¥700 (super affordable!)
     category: "electronics",
     image_url: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400",
     stock_quantity: 35,
@@ -149,6 +149,81 @@ router.post('/init-demo', requireAdmin, (req: Request, res: Response) => {
       data: { inserted: insertedCount, errors: errorCount }
     });
   }, 1000);
+});
+
+// Update existing demo products with new prices
+router.post('/update-prices', requireAdmin, (req: Request, res: Response) => {
+  let updatedCount = 0;
+  let errorCount = 0;
+
+  demoProducts.forEach((product) => {
+    db.run(
+      'UPDATE products SET price = ? WHERE title = ?',
+      [product.price, product.title],
+      function(err) {
+        if (err) {
+          errorCount++;
+          console.error('Error updating product price:', err);
+        } else {
+          if (this.changes > 0) {
+            updatedCount++;
+          }
+        }
+      }
+    );
+  });
+
+  setTimeout(() => {
+    res.json({
+      success: true,
+      message: 'Product prices updated',
+      data: { updated: updatedCount, errors: errorCount }
+    });
+  }, 1000);
+});
+
+// Reset demo products (delete old ones and create new ones with correct prices)
+router.post('/reset-demo', requireAdmin, (req: Request, res: Response) => {
+  // First, delete all existing demo products
+  db.run('DELETE FROM products WHERE title IN (?)', [demoProducts.map(p => p.title).join(',')], function(err) {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to delete old products' });
+    }
+
+    // Then insert new products with correct prices
+    let insertedCount = 0;
+    let errorCount = 0;
+
+    demoProducts.forEach((product) => {
+      db.run(
+        'INSERT INTO products (title, description, price, category, image_url, stock_quantity, external_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [
+          product.title,
+          product.description,
+          product.price,
+          product.category,
+          product.image_url,
+          product.stock_quantity,
+          `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        ],
+        function(err) {
+          if (err) {
+            errorCount++;
+          } else {
+            insertedCount++;
+          }
+        }
+      );
+    });
+
+    setTimeout(() => {
+      res.json({
+        success: true,
+        message: 'Demo products reset with new prices',
+        data: { inserted: insertedCount, errors: errorCount }
+      });
+    }, 1000);
+  });
 });
 
 // Get all products (with pagination and filtering)

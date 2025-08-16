@@ -30,19 +30,27 @@ export default function CheckoutPage() {
         shipping_address: shippingAddress
       })
       
-      setOrderId(response.data.order.id)
-      setStep('payment')
-      toast.success('Order created! Please complete payment.')
+      if (response.data.success && response.data.data?.id) {
+        setOrderId(response.data.data.id)
+        setStep('payment')
+        toast.success('Order created! Please complete payment.')
+      } else {
+        throw new Error('Invalid response format')
+      }
     } catch (error: any) {
       console.error('Order creation error:', error)
-      toast.error(`Failed to create order: ${error.response?.data?.error || error.message}`)
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to create order'
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
   }
 
   const handlePaymentSubmit = async (paymentData: PaymentRequest) => {
-    if (!orderId) return
+    if (!orderId) {
+      toast.error('No order found. Please try again.')
+      return
+    }
     
     setIsLoading(true)
     setStep('processing')
@@ -55,12 +63,14 @@ export default function CheckoutPage() {
         toast.success(response.data.message || 'Payment completed successfully!')
         navigate('/orders')
       } else {
-        toast.error(response.data.error || 'Payment failed')
+        const errorMessage = response.data.error || 'Payment failed'
+        toast.error(errorMessage)
         setStep('payment')
       }
     } catch (error: any) {
       console.error('Payment error:', error)
-      toast.error(`Payment failed: ${error.response?.data?.error || error.message}`)
+      const errorMessage = error.response?.data?.error || error.message || 'Payment failed'
+      toast.error(errorMessage)
       setStep('payment')
     } finally {
       setIsLoading(false)
@@ -77,23 +87,29 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-bold">Checkout</h1>
       
       {/* Progress Steps */}
-      <div className="flex items-center justify-center space-x-4 mb-8">
+      <nav aria-label="Checkout progress" className="flex items-center justify-center space-x-4 mb-8">
         <div className={`flex items-center space-x-2 ${step === 'shipping' ? 'text-blue-600' : step === 'payment' || step === 'processing' ? 'text-green-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'shipping' ? 'bg-blue-600 text-white' : step === 'payment' || step === 'processing' ? 'bg-green-600 text-white' : 'bg-gray-300'}`}>
+          <div 
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'shipping' ? 'bg-blue-600 text-white' : step === 'payment' || step === 'processing' ? 'bg-green-600 text-white' : 'bg-gray-300'}`}
+            aria-current={step === 'shipping' ? 'step' : undefined}
+          >
             1
           </div>
           <span>Shipping</span>
         </div>
-        <div className="w-12 h-1 bg-gray-300">
-          <div className={`h-full transition-all duration-300 ${step === 'payment' || step === 'processing' ? 'bg-green-600' : 'bg-gray-300'}`} style={{ width: step === 'payment' || step === 'processing' ? '100%' : '0%' }}></div>
+        <div className="w-12 h-1 bg-gray-300" role="progressbar" aria-label="Checkout progress">
+          <div className={`h-full transition-all duration-300 ${step === 'payment' || step === 'processing' ? 'bg-green-600' : 'bg-gray-300'} ${step === 'payment' || step === 'processing' ? 'progress-bar-active' : 'progress-bar-inactive'}`}></div>
         </div>
         <div className={`flex items-center space-x-2 ${step === 'payment' ? 'text-blue-600' : step === 'processing' ? 'text-green-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'payment' ? 'bg-blue-600 text-white' : step === 'processing' ? 'bg-green-600 text-white' : 'bg-gray-300'}`}>
+          <div 
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'payment' ? 'bg-blue-600 text-white' : step === 'processing' ? 'bg-green-600 text-white' : 'bg-gray-300'}`}
+            aria-current={step === 'payment' ? 'step' : undefined}
+          >
             2
           </div>
           <span>Payment</span>
         </div>
-      </div>
+      </nav>
       
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Order Summary */}
@@ -150,9 +166,13 @@ export default function CheckoutPage() {
                   type="submit"
                   disabled={isLoading}
                   className="btn btn-primary w-full py-3"
+                  aria-describedby={isLoading ? "loading-text" : undefined}
                 >
                   {isLoading ? (
-                    <div className="loading-spinner"></div>
+                    <>
+                      <div className="loading-spinner" aria-hidden="true"></div>
+                      <span id="loading-text">Processing...</span>
+                    </>
                   ) : (
                     `Continue to Payment - ¥${total.toLocaleString()}`
                   )}
@@ -170,8 +190,8 @@ export default function CheckoutPage() {
           )}
 
           {step === 'processing' && (
-            <div className="card p-6 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="card p-6 text-center" role="status" aria-live="polite">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" aria-hidden="true"></div>
               <h2 className="text-xl font-bold mb-2">Processing Payment...</h2>
               <p className="text-gray-600">Please wait while we process your payment.</p>
             </div>

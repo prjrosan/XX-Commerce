@@ -9,7 +9,7 @@ interface PaymentFormProps {
 }
 
 export default function PaymentForm({ amount, onSubmit, loading = false }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<string>('credit_card')
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer' | 'cash_on_delivery'>('credit_card')
   const [formData, setFormData] = useState({
     card_number: '',
     card_holder: '',
@@ -32,7 +32,7 @@ export default function PaymentForm({ amount, onSubmit, loading = false }: Payme
     e.preventDefault()
     
     const paymentData: PaymentRequest = {
-      payment_method: paymentMethod as any,
+      payment_method: paymentMethod,
       payment_details: formData
     }
     

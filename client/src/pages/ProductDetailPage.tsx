@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { ShoppingCart, Minus, Plus, Palette, Settings } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Settings } from 'lucide-react'
 import { Product, ApiResponse } from '../types'
 import { api } from '../lib/api'
 import { useCartStore } from '../store/cart'
@@ -134,13 +134,17 @@ export default function ProductDetailPage() {
               {Object.entries(product.customization_options).map(([option, values]) => (
                 <div key={option} className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 capitalize">
-                    {option.replace('_', ' ')}:
+                    {option.replace(/_/g, ' ')}:
                   </label>
                   <select
-                    value={customizations[option] || ''}
-                    onChange={(e) => handleCustomizationChange(option, e.target.value)}
+                    id={`customization-${option}`}
+                    aria-label={option.replace(/_/g, ' ')}
+                    value={customizations[option] ?? ''}
+                    onChange={e => handleCustomizationChange(option, e.target.value)}
                     className="input"
+                    disabled={product.stock_quantity === 0}
                   >
+                    {/* Ensure a default option is always present */}
                     <option value="">Select {option.replace('_', ' ')}</option>
                     {Array.isArray(values) ? values.map((value: string) => (
                       <option key={value} value={value}>
@@ -160,6 +164,7 @@ export default function ProductDetailPage() {
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-1 rounded border hover:bg-gray-50"
+                  title="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
@@ -167,6 +172,7 @@ export default function ProductDetailPage() {
                 <button
                   onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
                   className="p-1 rounded border hover:bg-gray-50"
+                  title="Increase quantity"
                 >
                   <Plus className="h-4 w-4" />
                 </button>

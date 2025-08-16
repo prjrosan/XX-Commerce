@@ -11,20 +11,57 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
 
   const query = `
-    SELECT ci.*, p.title, p.price, p.image_url, p.stock_quantity
+    SELECT 
+      ci.id,
+      ci.user_id,
+      ci.product_id,
+      ci.quantity,
+      ci.created_at,
+      ci.updated_at,
+      p.id as product_id_full,
+      p.title,
+      p.description,
+      p.price,
+      p.category,
+      p.image_url,
+      p.stock_quantity,
+      p.external_id,
+      p.created_at as product_created_at,
+      p.updated_at as product_updated_at
     FROM cart_items ci
     JOIN products p ON ci.product_id = p.id
     WHERE ci.user_id = ?
   `;
 
-  db.all(query, [userId], (err, items: CartItem[]) => {
+  db.all(query, [userId], (err, rows: any[]) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
 
+    // Transform the data to match the expected CartItem structure
+    const items = rows.map(row => ({
+      id: row.id,
+      user_id: row.user_id,
+      product_id: row.product_id,
+      quantity: row.quantity,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      product: {
+        id: row.product_id_full,
+        title: row.title,
+        description: row.description,
+        price: row.price,
+        category: row.category,
+        image_url: row.image_url,
+        stock_quantity: row.stock_quantity,
+        external_id: row.external_id,
+        created_at: row.product_created_at,
+        updated_at: row.product_updated_at
+      }
+    }));
+
     const total = items.reduce((sum, item) => {
-      const price = (item as any).price || 0;
-      return sum + (price * item.quantity);
+      return sum + (item.product.price * item.quantity);
     }, 0);
 
     res.json({

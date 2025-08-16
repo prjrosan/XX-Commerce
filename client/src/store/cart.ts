@@ -30,7 +30,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await api.get<ApiResponse<CartResponse>>('/cart')
-      const { items, total } = response.data.data
+      const { items, total } = response.data.data || { items: [], total: 0 }
       set({ items, total, isLoading: false })
     } catch (error: any) {
       set({ 
