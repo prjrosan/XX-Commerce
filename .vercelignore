@@ -2,7 +2,8 @@
 node_modules/
 */node_modules/
 
-# Build outputs
+# Build outputs - exclude completely
+dist/
 */dist/
 */build/
 
@@ -66,4 +67,8 @@ Thumbs.db
 # Server files (not needed for client deployment)
 server/
 railway-env.md
-test-payment.md 
+test-payment.md
+
+# Git files
+.git/
+.gitignore 
