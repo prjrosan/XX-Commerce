@@ -1,9 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm run vercel-build",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "client/dist",
   "installCommand": "npm run install-all",
+  "devCommand": "npm run dev",
   "framework": "vite",
+  "functions": {
+    "client/dist/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
     {
       "src": "/(.*)",

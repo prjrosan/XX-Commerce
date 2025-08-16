@@ -15,12 +15,31 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-x64', '@rollup/rollup-win32-x64-msvc'],
+      external: [
+        '@rollup/rollup-linux-x64-gnu',
+        '@rollup/rollup-darwin-x64',
+        '@rollup/rollup-win32-x64-msvc',
+        '@rollup/rollup-linux-arm64-gnu',
+        '@rollup/rollup-darwin-arm64',
+        '@rollup/rollup-win32-arm64-msvc'
+      ],
     },
     target: 'esnext',
     minify: 'esbuild',
+    ssr: false,
+    sourcemap: false,
   },
   optimizeDeps: {
-    exclude: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-x64', '@rollup/rollup-win32-x64-msvc']
+    exclude: [
+      '@rollup/rollup-linux-x64-gnu',
+      '@rollup/rollup-darwin-x64',
+      '@rollup/rollup-win32-x64-msvc',
+      '@rollup/rollup-linux-arm64-gnu',
+      '@rollup/rollup-darwin-arm64',
+      '@rollup/rollup-win32-arm64-msvc'
+    ]
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"'
   }
 }) 
