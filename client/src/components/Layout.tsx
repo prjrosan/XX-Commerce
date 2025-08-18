@@ -1,11 +1,50 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ShoppingCart, User, LogOut, Home, Package, Settings } from 'lucide-react'
+import { ShoppingCart, User, LogOut, Home, Package, Settings, Sparkles } from 'lucide-react'
 import { useAuthStore } from '../store/auth'
 import { useCartStore } from '../store/cart'
 
 interface LayoutProps {
   children: ReactNode
+}
+
+// Stunning Logo Component
+function StunningLogo() {
+  return (
+    <Link to="/" className="flex items-center space-x-3 group">
+      {/* Logo Container */}
+      <div className="relative">
+        {/* Main Logo Circle */}
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110 relative overflow-hidden">
+          {/* Animated Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 via-purple-400/30 to-indigo-400/30 animate-pulse"></div>
+          
+          {/* Logo Icon */}
+          <div className="relative z-10">
+            <Sparkles className="h-6 w-6 text-white group-hover:rotate-12 transition-transform duration-300" />
+          </div>
+          
+          {/* Glowing Effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
+        </div>
+        
+        {/* Floating Particles */}
+        <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
+        <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping opacity-75" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 -right-2 w-1 h-1 bg-pink-400 rounded-full animate-ping opacity-75" style={{animationDelay: '2s'}}></div>
+      </div>
+      
+      {/* Logo Text */}
+      <div className="flex flex-col">
+        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:via-purple-500 group-hover:to-indigo-500 transition-all duration-300">
+          XX-Commerce
+        </span>
+        <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300 -mt-1">
+          Next-Gen Shopping
+        </span>
+      </div>
+    </Link>
+  )
 }
 
 export default function Layout({ children }: LayoutProps) {
@@ -25,11 +64,8 @@ export default function Layout({ children }: LayoutProps) {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <Package className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">XX-Commerce</span>
-            </Link>
+            {/* Stunning Logo */}
+            <StunningLogo />
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
