@@ -98,6 +98,22 @@ export async function initializeDatabase(): Promise<void> {
         )
       `);
 
+      // Create ratings table
+      db.run(`
+        CREATE TABLE IF NOT EXISTS ratings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          order_id INTEGER NOT NULL,
+          rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          comment TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users (id),
+          FOREIGN KEY (order_id) REFERENCES orders (id),
+          UNIQUE(user_id, order_id)
+        )
+      `);
+
       // Insert default admin user
       db.run(`
         INSERT OR IGNORE INTO users (email, password, name, role)

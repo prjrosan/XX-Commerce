@@ -14,6 +14,7 @@ import adminRoutes from './routes/admin';
 import paymentRoutes from './routes/payments';
 import stripePaymentRoutes from './routes/stripePayments';
 import chatRoutes from './routes/chat';
+import ratingRoutes from './routes/ratings';
 import { authenticateToken } from './middleware/auth';
 import { WebSocketManager } from './services/websocket';
 
@@ -81,6 +82,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/stripe', stripePaymentRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

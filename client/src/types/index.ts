@@ -83,6 +83,36 @@ export interface OrderItem {
   product?: Product;
 }
 
+export interface Rating {
+  id: number;
+  user_id: number;
+  order_id: number;
+  rating: 1 | 2 | 3 | 4 | 5;
+  comment?: string;
+  created_at: string;
+  updated_at: string;
+  user_name?: string;
+  total_amount?: number;
+  shipping_address?: string;
+  order_date?: string;
+}
+
+export interface CreateRatingRequest {
+  order_id: number;
+  rating: 1 | 2 | 3 | 4 | 5;
+  comment?: string;
+}
+
+export interface RatingStats {
+  total_ratings: number;
+  average_rating: number;
+  five_star: number;
+  four_star: number;
+  three_star: number;
+  two_star: number;
+  one_star: number;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Sparkles, Shield, Zap, TrendingUp, Truck, CreditCard, Users, Globe } from 'lucide-react'
-import { Product, ApiResponse, ProductsResponse } from '../types'
+import { ArrowRight, Sparkles, Shield, Zap, TrendingUp, Truck, CreditCard, Users, Globe, Star } from 'lucide-react'
+import { Product, ApiResponse, ProductsResponse, RatingStats } from '../types'
 import { api } from '../lib/api'
 import ProductCard from '../components/ProductCard'
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [ratingStats, setRatingStats] = useState<RatingStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
 
@@ -25,7 +26,19 @@ export default function HomePage() {
       }
     }
 
+    const loadRatingStats = async () => {
+      try {
+        const response = await api.get<ApiResponse<{ stats: RatingStats }>>('/ratings/stats')
+        if (response.data.data) {
+          setRatingStats(response.data.data.stats)
+        }
+      } catch (error) {
+        console.error('Failed to load rating stats:', error)
+      }
+    }
+
     loadFeaturedProducts()
+    loadRatingStats()
   }, [])
 
   return (
@@ -113,7 +126,9 @@ export default function HomePage() {
             {/* Stats */}
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 transition-all duration-1000 delay-300 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">1000+</div>
+                <div className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  {ratingStats ? ratingStats.total_ratings : '1000+'}
+                </div>
                 <div className="text-blue-200 text-sm">Happy Customers</div>
               </div>
               <div className="text-center">
@@ -125,8 +140,13 @@ export default function HomePage() {
                 <div className="text-blue-200 text-sm">Support</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">99%</div>
-                <div className="text-blue-200 text-sm">Satisfaction</div>
+                <div className="flex items-center justify-center space-x-1 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-white">
+                    {ratingStats ? ratingStats.average_rating.toFixed(1) : '4.8'}
+                  </div>
+                  <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                </div>
+                <div className="text-blue-200 text-sm">Average Rating</div>
               </div>
             </div>
           </div>
