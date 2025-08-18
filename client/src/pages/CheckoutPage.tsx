@@ -30,8 +30,10 @@ export default function CheckoutPage() {
         shipping_address: shippingAddress
       })
       
-      if (response.data.success && response.data.data?.id) {
-        setOrderId(response.data.data.id)
+      console.log('Order creation response:', response.data)
+      
+      if (response.data.success && response.data.order?.id) {
+        setOrderId(response.data.order.id)
         setStep('payment')
         toast.success('Order created! Please complete payment.')
       } else {
@@ -52,11 +54,19 @@ export default function CheckoutPage() {
       return
     }
     
+    console.log('=== PAYMENT DEBUG START ===')
+    console.log('Payment data being sent:', paymentData)
+    console.log('Order ID:', orderId)
+    console.log('API URL:', import.meta.env.VITE_API_URL || 'http://localhost:3001/api')
+    console.log('Token exists:', !!localStorage.getItem('token'))
+    
     setIsLoading(true)
     setStep('processing')
     
     try {
+      console.log('Making API call to:', `/payments/process/${orderId}`)
       const response = await api.post(`/payments/process/${orderId}`, paymentData)
+      console.log('Payment response:', response.data)
       
       if (response.data.success) {
         await clearCart()
@@ -68,12 +78,19 @@ export default function CheckoutPage() {
         setStep('payment')
       }
     } catch (error: any) {
+      console.error('=== PAYMENT ERROR ===')
       console.error('Payment error:', error)
+      console.error('Error response:', error.response?.data)
+      console.error('Error status:', error.response?.status)
+      console.error('Error message:', error.message)
+      console.error('Full error object:', error)
+      
       const errorMessage = error.response?.data?.error || error.message || 'Payment failed'
       toast.error(errorMessage)
       setStep('payment')
     } finally {
       setIsLoading(false)
+      console.log('=== PAYMENT DEBUG END ===')
     }
   }
 

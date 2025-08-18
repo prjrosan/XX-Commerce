@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CreditCard, Smartphone, Building, Truck, DollarSign, Zap } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface SimplePaymentFormProps {
   amount: number
@@ -21,6 +22,16 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('=== FORM SUBMIT DEBUG ===')
+    console.log('Form submitted with payment method:', paymentMethod)
+    console.log('PayPay phone:', paypayPhone)
+    
+    // Validate PayPay phone number if PayPay is selected
+    if (paymentMethod === 'paypay' && !paypayPhone.trim()) {
+      toast.error('Please enter your PayPay phone number')
+      return
+    }
+    
     // Simple payment data that works with our backend
     const paymentData = {
       payment_method: paymentMethod,
@@ -32,7 +43,10 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
       }
     }
     
+    console.log('SimplePaymentForm submitting:', paymentData)
+    console.log('Calling onSubmit function...')
     onSubmit(paymentData)
+    console.log('onSubmit function called successfully')
   }
 
   return (
@@ -246,7 +260,6 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
                 value={paypayPhone}
                 onChange={(e) => setPaypayPhone(e.target.value)}
                 placeholder="080-1234-5678 or +81-80-1234-5678"
-                required
                 className="input w-full"
                 pattern="^(\+81|0)[0-9]{10,11}$"
               />

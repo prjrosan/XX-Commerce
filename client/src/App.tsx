@@ -27,31 +27,21 @@ function App() {
   const [hasError, setHasError] = useState(false)
   const [apiUnavailable, setApiUnavailable] = useState(false)
 
-  console.log('App component rendering, isInitializing:', isInitializing)
-
   useEffect(() => {
-    console.log('App useEffect running, starting initialization')
     const initializeApp = async () => {
       try {
-        console.log('Setting isInitializing to true')
         setIsInitializing(true)
-        console.log('Calling checkAuth...')
         await checkAuth()
-        console.log('checkAuth completed successfully')
         setIsInitializing(false)
-        console.log('App initialization completed')
       } catch (error) {
-        console.error('Failed to initialize app:', error)
         // Check if it's an API connection error
         if (error instanceof Error && (
           error.message.includes('Network Error') || 
           error.message.includes('ERR_NETWORK') ||
           error.message.includes('fetch')
         )) {
-          console.log('Setting apiUnavailable to true')
           setApiUnavailable(true)
         } else {
-          console.log('Setting hasError to true')
           setHasError(true)
         }
         setIsInitializing(false)
@@ -63,30 +53,24 @@ function App() {
 
   useEffect(() => {
     if (user && !isInitializing) {
-      console.log('Loading cart for user:', user)
       loadCart().catch(error => {
         console.error('Failed to load cart:', error)
       })
     }
   }, [user, loadCart, isInitializing])
 
-  console.log('App render state:', { isInitializing, hasError, apiUnavailable })
-
   // Show loading screen while initializing
   if (isInitializing) {
-    console.log('Rendering LoadingScreen')
     return <LoadingScreen message="Initializing..." />
   }
 
   // Show API unavailable screen
   if (apiUnavailable) {
-    console.log('Rendering ApiUnavailable')
     return <ApiUnavailable />
   }
 
   // Show error screen if initialization failed
   if (hasError) {
-    console.log('Rendering error screen')
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
@@ -108,7 +92,7 @@ function App() {
     )
   }
 
-  console.log('Rendering main app with Layout and Routes')
+
   return (
     <Layout>
       <Routes>

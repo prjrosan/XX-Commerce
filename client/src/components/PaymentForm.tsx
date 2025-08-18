@@ -166,6 +166,8 @@ export default function PaymentForm({ amount, onSubmit, loading = false }: Payme
                 </label>
                 <select
                   name="expiry_month"
+                  id="expiry_month"
+                  aria-label="Expiry Month"
                   value={formData.expiry_month}
                   onChange={handleInputChange}
                   required
@@ -186,6 +188,8 @@ export default function PaymentForm({ amount, onSubmit, loading = false }: Payme
                 </label>
                 <select
                   name="expiry_year"
+                  id="expiry_year"
+                  aria-label="Expiry Year"
                   value={formData.expiry_year}
                   onChange={handleInputChange}
                   required

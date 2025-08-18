@@ -462,7 +462,13 @@ export default function SellerPanel() {
               />
             </div>
 
-            <button className="btn btn-primary w-full">Add Customization Option</button>
+            <button 
+              className="btn btn-primary w-full"
+              type="button"
+              title="Add customization option to product"
+            >
+              Add Customization Option
+            </button>
           </div>
         </div>
       </div>
@@ -480,8 +486,20 @@ export default function SellerPanel() {
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <button className="btn btn-sm btn-outline">Edit</button>
-                <button className="btn btn-sm btn-outline">View</button>
+                <button 
+                  className="btn btn-sm btn-outline"
+                  type="button"
+                  title="Edit product customization"
+                >
+                  Edit
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline"
+                  type="button"
+                  title="View product customization details"
+                >
+                  View
+                </button>
               </div>
             </div>
           ))}

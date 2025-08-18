@@ -35,7 +35,7 @@ export interface CartItem {
 export interface Payment {
   id: number;
   order_id: number;
-  payment_method: 'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer' | 'cash_on_delivery';
+  payment_method: 'credit_card' | 'debit_card' | 'paypal' | 'paypay' | 'bank_transfer' | 'cash_on_delivery';
   payment_status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
   amount: number;
   transaction_id?: string;
@@ -45,7 +45,7 @@ export interface Payment {
 }
 
 export interface PaymentRequest {
-  payment_method: 'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer' | 'cash_on_delivery';
+  payment_method: 'credit_card' | 'debit_card' | 'paypal' | 'paypay' | 'bank_transfer' | 'cash_on_delivery';
   payment_details?: {
     card_number?: string;
     card_holder?: string;
@@ -53,6 +53,7 @@ export interface PaymentRequest {
     expiry_year?: string;
     cvv?: string;
     paypal_email?: string;
+    paypay_phone?: string;
 
     bank_name?: string;
     account_number?: string;

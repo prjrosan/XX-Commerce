@@ -53,7 +53,7 @@ export default function AdminPage() {
     try {
       setLoading(true)
       const response = await api.get('/products?limit=100')
-      console.log('Loaded products:', response.data.data.products.length)
+
       setProducts(response.data.data.products)
     } catch (error) {
       console.error('Load products error:', error)
@@ -69,12 +69,7 @@ export default function AdminPage() {
     }
 
     try {
-      console.log('Attempting to delete product:', productId)
-      const token = localStorage.getItem('token')
-      console.log('Token exists:', !!token)
-      
-      const response = await api.delete(`/products/${productId}`)
-      console.log('Delete response:', response.data)
+      await api.delete(`/products/${productId}`)
       
       toast.success('Product deleted successfully!')
       loadProducts()
