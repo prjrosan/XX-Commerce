@@ -142,7 +142,7 @@ export default function HomePage() {
               <div className="text-center">
                 <div className="flex items-center justify-center space-x-1 mb-2">
                   <div className="text-3xl md:text-4xl font-bold text-white">
-                    {ratingStats ? ratingStats.average_rating.toFixed(1) : '4.8'}
+                    {ratingStats ? (ratingStats.average_rating || 0).toFixed(1) : '4.8'}
                   </div>
                   <Star className="h-6 w-6 text-yellow-400 fill-current" />
                 </div>

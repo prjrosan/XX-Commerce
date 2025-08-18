@@ -19,11 +19,12 @@ export function RatingDisplay({ rating, showText = false, size = 'md', className
   };
 
   const getRatingText = (rating: number) => {
-    if (rating >= 4.5) return 'Excellent';
-    if (rating >= 4) return 'Very Good';
-    if (rating >= 3.5) return 'Good';
-    if (rating >= 3) return 'Fair';
-    if (rating >= 2) return 'Poor';
+    const safeRating = rating || 0;
+    if (safeRating >= 4.5) return 'Excellent';
+    if (safeRating >= 4) return 'Very Good';
+    if (safeRating >= 3.5) return 'Good';
+    if (safeRating >= 3) return 'Fair';
+    if (safeRating >= 2) return 'Poor';
     return 'Very Poor';
   };
 
@@ -33,7 +34,7 @@ export function RatingDisplay({ rating, showText = false, size = 'md', className
         <Star
           key={star}
           className={`${getSizeClasses()} ${
-            star <= Math.round(rating) 
+            star <= Math.round(rating || 0) 
               ? 'text-yellow-400 fill-current' 
               : 'text-gray-400'
           }`}
@@ -41,7 +42,7 @@ export function RatingDisplay({ rating, showText = false, size = 'md', className
       ))}
       {showText && (
         <span className="text-sm text-gray-600 ml-2">
-          {rating.toFixed(1)} ({getRatingText(rating)})
+          {(rating || 0).toFixed(1)} ({getRatingText(rating || 0)})
         </span>
       )}
     </div>
@@ -65,8 +66,8 @@ export function RatingStatsDisplay({ stats, className = '' }: RatingStatsDisplay
     <div className={`space-y-4 ${className}`}>
       {/* Overall Rating */}
       <div className="text-center">
-        <div className="text-3xl font-bold text-gray-900">{averageRating.toFixed(1)}</div>
-        <RatingDisplay rating={averageRating} size="lg" className="justify-center" />
+        <div className="text-3xl font-bold text-gray-900">{(averageRating || 0).toFixed(1)}</div>
+        <RatingDisplay rating={averageRating || 0} size="lg" className="justify-center" />
         <div className="text-sm text-gray-600 mt-1">
           Based on {totalRatings} rating{totalRatings !== 1 ? 's' : ''}
         </div>
