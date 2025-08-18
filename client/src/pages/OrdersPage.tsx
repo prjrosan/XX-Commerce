@@ -4,7 +4,6 @@ import { api } from '../lib/api'
 import RatingForm from '../components/RatingForm'
 import { RatingDisplay } from '../components/RatingDisplay'
 import { Star, MessageCircle } from 'lucide-react'
-import toast from 'react-hot-toast'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])

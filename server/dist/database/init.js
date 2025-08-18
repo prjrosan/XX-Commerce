@@ -92,6 +92,20 @@ async function initializeDatabase() {
         )
       `);
             exports.db.run(`
+        CREATE TABLE IF NOT EXISTS ratings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          order_id INTEGER NOT NULL,
+          rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          comment TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users (id),
+          FOREIGN KEY (order_id) REFERENCES orders (id),
+          UNIQUE(user_id, order_id)
+        )
+      `);
+            exports.db.run(`
         INSERT OR IGNORE INTO users (email, password, name, role)
         VALUES ('admin@xxcommerce.com', '$2a$10$rQZ8N3YqX2vB1cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5aB6cD7eF8gH', 'Admin User', 'admin')
       `);

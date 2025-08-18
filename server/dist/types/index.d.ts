@@ -60,6 +60,17 @@ export interface OrderItem {
     price: number;
     product?: Product;
 }
+export interface Rating {
+    id: number;
+    user_id: number;
+    order_id: number;
+    rating: 1 | 2 | 3 | 4 | 5;
+    comment?: string;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+    order?: Order;
+}
 import { Request } from 'express';
 export interface AuthRequest extends Request {
     user?: User;
@@ -99,6 +110,11 @@ export interface CreateOrderRequest {
         quantity: number;
     }>;
     shipping_address: string;
+}
+export interface CreateRatingRequest {
+    order_id: number;
+    rating: 1 | 2 | 3 | 4 | 5;
+    comment?: string;
 }
 export interface ApiResponse<T = any> {
     success: boolean;

@@ -82,7 +82,7 @@ export default function RatingForm({ orderId, onRatingSubmitted, onCancel }: Rat
                 onMouseEnter={() => setHoveredRating(star)}
                 onMouseLeave={() => setHoveredRating(null)}
                 className={`transition-all duration-200 transform hover:scale-110 ${
-                  (hoveredRating || rating) >= star
+                  ((hoveredRating || rating) || 0) >= star
                     ? 'text-yellow-400'
                     : 'text-gray-400 hover:text-yellow-300'
                 }`}
@@ -90,7 +90,7 @@ export default function RatingForm({ orderId, onRatingSubmitted, onCancel }: Rat
               >
                 <Star 
                   className={`h-12 w-12 ${
-                    (hoveredRating || rating) >= star
+                    ((hoveredRating || rating) || 0) >= star
                       ? 'fill-current'
                       : 'fill-none'
                   }`}

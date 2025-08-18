@@ -20,6 +20,7 @@ const admin_1 = __importDefault(require("./routes/admin"));
 const payments_1 = __importDefault(require("./routes/payments"));
 const stripePayments_1 = __importDefault(require("./routes/stripePayments"));
 const chat_1 = __importDefault(require("./routes/chat"));
+const ratings_1 = __importDefault(require("./routes/ratings"));
 const auth_2 = require("./middleware/auth");
 const websocket_1 = require("./services/websocket");
 if (process.env.NODE_ENV !== 'production') {
@@ -73,6 +74,7 @@ app.use('/api/admin', admin_1.default);
 app.use('/api/payments', payments_1.default);
 app.use('/api/stripe', stripePayments_1.default);
 app.use('/api/chat', chat_1.default);
+app.use('/api/ratings', ratings_1.default);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
