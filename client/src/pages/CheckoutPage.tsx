@@ -26,21 +26,48 @@ export default function CheckoutPage() {
     
     try {
       // Create order first
+              const orderItems = items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity
+        }))
+      
+      console.log('=== ORDER CREATION DEBUG ===')
+      console.log('Sending order data:', {
+        items: orderItems,
+        shipping_address: shippingAddress,
+        shipping_method: 'standard'
+      })
+      console.log('API URL:', import.meta.env.VITE_API_URL || 'http://localhost:3001/api')
+      console.log('Token exists:', !!localStorage.getItem('token'))
+      
       const response = await api.post('/orders', {
-        shipping_address: shippingAddress
+        items: orderItems,
+        shipping_address: shippingAddress,
+        shipping_method: 'standard' // Default shipping method
       })
       
       console.log('Order creation response:', response.data)
+      console.log('=== ORDER CREATION DEBUG END ===')
       
-      if (response.data.success && response.data.order?.id) {
-        setOrderId(response.data.order.id)
+      if (response.data.success && response.data.data?.order?.id) {
+        setOrderId(response.data.data.order.id)
         setStep('payment')
         toast.success('Order created! Please complete payment.')
       } else {
-        throw new Error('Invalid response format')
+        console.error('Unexpected response format:', response.data)
+        throw new Error('Invalid response format from server')
       }
     } catch (error: any) {
       console.error('Order creation error:', error)
+      
+      // Handle specific error cases
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('Authentication failed. Please log in again.')
+        // Redirect to login
+        navigate('/login')
+        return
+      }
+      
       const errorMessage = error.response?.data?.error || error.message || 'Failed to create order'
       toast.error(errorMessage)
     } finally {
@@ -136,7 +163,7 @@ export default function CheckoutPage() {
             {items.map((item) => (
               <div key={item.id} className="flex justify-between">
                 <div>
-                  <p className="font-medium">{item.product?.title}</p>
+                                              <p className="font-medium">{item.product?.title}</p>
                   <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                 </div>
                 <p className="font-bold">

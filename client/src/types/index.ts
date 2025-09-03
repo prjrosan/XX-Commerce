@@ -5,6 +5,7 @@ export interface User {
   role: 'user' | 'admin' | 'seller';
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
 }
 
 export interface Product {
@@ -18,6 +19,7 @@ export interface Product {
   external_id?: string;
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
   customization_options?: any;
 }
 
@@ -28,6 +30,7 @@ export interface CartItem {
   quantity: number;
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
   product?: Product;
   price?: number;
 }
@@ -42,6 +45,7 @@ export interface Payment {
   payment_details?: any;
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
 }
 
 export interface PaymentRequest {
@@ -69,6 +73,7 @@ export interface Order {
   shipping_address: string;
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
   items?: OrderItem[];
   items_summary?: string;
   payment?: Payment;
@@ -91,6 +96,7 @@ export interface Rating {
   comment?: string;
   created_at: string;
   updated_at: string;
+  customization_options?: Record<string, string[]>;
   user_name?: string;
   total_amount?: number;
   shipping_address?: string;

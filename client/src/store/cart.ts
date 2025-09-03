@@ -28,11 +28,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   loadCart: async () => {
     set({ isLoading: true, error: null })
-    try {
-      const response = await api.get<ApiResponse<CartResponse>>('/cart')
-      const { items, total } = response.data.data || { items: [], total: 0 }
-      set({ items, total, isLoading: false })
-    } catch (error: any) {
+                      try {
+                    const response = await api.get<ApiResponse<CartResponse>>('/cart')
+                    const { items, total } = response.data.data || { items: [], total: 0 }
+                    
+                    set({ items, total, isLoading: false })
+                  } catch (error: any) {
       set({ 
         error: error.response?.data?.error || 'Failed to load cart', 
         isLoading: false 

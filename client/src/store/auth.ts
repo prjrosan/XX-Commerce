@@ -29,14 +29,20 @@ export const useAuthStore = create<AuthStore>()(
       error: null,
 
       login: async (credentials: LoginRequest) => {
+        console.log('🔐 Frontend login attempt:', credentials)
         set({ isLoading: true, error: null })
         try {
+          console.log('🌐 Making API call to:', '/auth/login')
           const response = await api.post<ApiResponse>('/auth/login', credentials)
+          console.log('✅ Login response:', response.data)
           const { user, token } = response.data.data
           
           set({ user, token, isLoading: false })
           localStorage.setItem('token', token)
+          console.log('💾 Token saved to localStorage')
         } catch (error: any) {
+          console.error('❌ Login error:', error)
+          console.error('❌ Error response:', error.response?.data)
           set({ 
             error: error.response?.data?.error || 'Login failed', 
             isLoading: false 

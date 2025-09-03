@@ -137,7 +137,7 @@ export default function Layout({ children }: LayoutProps) {
                   )}
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                                            <span className="text-sm font-medium text-gray-900">{user.name || 'User'}</span>
                   </div>
                   <button
                     onClick={handleLogout}

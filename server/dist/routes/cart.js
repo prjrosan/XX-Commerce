@@ -3,185 +3,214 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const init_1 = require("../database/init");
+const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
-router.get('/', (req, res) => {
-    const userId = req.user.id;
-    const query = `
-    SELECT 
-      ci.id,
-      ci.user_id,
-      ci.product_id,
-      ci.quantity,
-      ci.created_at,
-      ci.updated_at,
-      p.id as product_id_full,
-      p.title,
-      p.description,
-      p.price,
-      p.category,
-      p.image_url,
-      p.stock_quantity,
-      p.external_id,
-      p.created_at as product_created_at,
-      p.updated_at as product_updated_at
-    FROM cart_items ci
-    JOIN products p ON ci.product_id = p.id
-    WHERE ci.user_id = ?
-  `;
-    init_1.db.all(query, [userId], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        const items = rows.map(row => ({
-            id: row.id,
-            user_id: row.user_id,
-            product_id: row.product_id,
-            quantity: row.quantity,
-            created_at: row.created_at,
-            updated_at: row.updated_at,
-            product: {
-                id: row.product_id_full,
-                title: row.title,
-                description: row.description,
-                price: row.price,
-                category: row.category,
-                image_url: row.image_url,
-                stock_quantity: row.stock_quantity,
-                external_id: row.external_id,
-                created_at: row.product_created_at,
-                updated_at: row.product_updated_at
-            }
-        }));
-        const total = items.reduce((sum, item) => {
-            return sum + (item.product.price * item.quantity);
-        }, 0);
-        res.json({
-            success: true,
-            data: {
-                items,
-                total: parseFloat(total.toFixed(2))
-            }
-        });
-    });
-});
-router.post('/add', [
-    (0, express_validator_1.body)('product_id').isInt({ min: 1 }),
-    (0, express_validator_1.body)('quantity').isInt({ min: 1 })
-], (req, res) => {
-    const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    const userId = req.user.id;
-    const { product_id, quantity } = req.body;
-    init_1.db.get('SELECT * FROM products WHERE id = ?', [product_id], (err, product) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-        if (product.stock_quantity < quantity) {
-            return res.status(400).json({ error: 'Insufficient stock' });
-        }
-        init_1.db.get('SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?', [userId, product_id], (err, existingItem) => {
+router.get('/', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const query = `
+      SELECT 
+        ci.id,
+        ci.user_id,
+        ci.product_id,
+        ci.quantity,
+        ci.created_at,
+        ci.updated_at,
+        p.title,
+        p.description,
+        p.price,
+        p.category,
+        p.image_url,
+        p.stock_quantity
+      FROM cart_items ci
+      JOIN products p ON ci.product_id = p.id
+      WHERE ci.user_id = ?
+    `;
+        init_1.db.all(query, [userId], (err, items) => {
             if (err) {
+                console.error('Error getting cart:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-            if (existingItem) {
-                const newQuantity = existingItem.quantity + quantity;
-                if (product.stock_quantity < newQuantity) {
+            const total = (items || []).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            res.json({
+                success: true,
+                data: {
+                    items: (items || []).map((item) => ({
+                        id: item.id,
+                        user_id: item.user_id,
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        created_at: item.created_at,
+                        updated_at: item.updated_at,
+                        product: {
+                            id: item.product_id,
+                            title: item.title,
+                            description: item.description,
+                            price: item.price,
+                            category: item.category,
+                            image_url: item.image_url,
+                            stock_quantity: item.stock_quantity
+                        }
+                    })),
+                    total: parseFloat(total.toFixed(2))
+                }
+            });
+        });
+    }
+    catch (error) {
+        console.error('Error getting cart:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+router.post('/add', auth_1.authenticateToken, [
+    (0, express_validator_1.body)('product_id').isInt({ min: 1 }),
+    (0, express_validator_1.body)('quantity').isInt({ min: 1 })
+], async (req, res) => {
+    try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        const userId = req.user.id;
+        const { product_id, quantity } = req.body;
+        init_1.db.get('SELECT * FROM products WHERE id = ?', [product_id], (err, product) => {
+            if (err) {
+                console.error('Error checking product:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            if (!product) {
+                return res.status(404).json({ error: 'Product not found' });
+            }
+            if (product.stock_quantity < quantity) {
+                return res.status(400).json({ error: 'Insufficient stock' });
+            }
+            init_1.db.get('SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?', [userId, product_id], (err, existingItem) => {
+                if (err) {
+                    console.error('Error checking existing cart item:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                if (existingItem) {
+                    const newQuantity = existingItem.quantity + quantity;
+                    if (product.stock_quantity < newQuantity) {
+                        return res.status(400).json({ error: 'Insufficient stock' });
+                    }
+                    init_1.db.run('UPDATE cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newQuantity, existingItem.id], function (err) {
+                        if (err) {
+                            console.error('Error updating cart item:', err);
+                            return res.status(500).json({ error: 'Database error' });
+                        }
+                        res.json({
+                            success: true,
+                            message: 'Cart item updated successfully'
+                        });
+                    });
+                }
+                else {
+                    init_1.db.run('INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)', [userId, product_id, quantity], function (err) {
+                        if (err) {
+                            console.error('Error adding to cart:', err);
+                            return res.status(500).json({ error: 'Database error' });
+                        }
+                        res.status(201).json({
+                            success: true,
+                            message: 'Item added to cart successfully'
+                        });
+                    });
+                }
+            });
+        });
+    }
+    catch (error) {
+        console.error('Error adding to cart:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+router.put('/update/:itemId', auth_1.authenticateToken, [
+    (0, express_validator_1.body)('quantity').isInt({ min: 1 })
+], async (req, res) => {
+    try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        const userId = req.user.id;
+        const { itemId } = req.params;
+        const { quantity } = req.body;
+        init_1.db.get('SELECT * FROM cart_items WHERE id = ? AND user_id = ?', [itemId, userId], (err, cartItem) => {
+            if (err) {
+                console.error('Error checking cart item:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            if (!cartItem) {
+                return res.status(404).json({ error: 'Cart item not found' });
+            }
+            init_1.db.get('SELECT stock_quantity FROM products WHERE id = ?', [cartItem.product_id], (err, product) => {
+                if (err) {
+                    console.error('Error checking product stock:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                if (!product || product.stock_quantity < quantity) {
                     return res.status(400).json({ error: 'Insufficient stock' });
                 }
-                init_1.db.run('UPDATE cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND product_id = ?', [newQuantity, userId, product_id], function (err) {
+                init_1.db.run('UPDATE cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [quantity, itemId], function (err) {
                     if (err) {
-                        return res.status(500).json({ error: 'Failed to update cart' });
+                        console.error('Error updating cart item:', err);
+                        return res.status(500).json({ error: 'Database error' });
                     }
                     res.json({
                         success: true,
-                        message: 'Cart updated successfully',
-                        data: { quantity: newQuantity }
+                        message: 'Cart item updated successfully'
                     });
                 });
-            }
-            else {
-                init_1.db.run('INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)', [userId, product_id, quantity], function (err) {
-                    if (err) {
-                        return res.status(500).json({ error: 'Failed to add to cart' });
-                    }
-                    res.status(201).json({
-                        success: true,
-                        message: 'Item added to cart successfully',
-                        data: { id: this.lastID }
-                    });
-                });
-            }
+            });
         });
-    });
-});
-router.put('/update/:productId', [
-    (0, express_validator_1.body)('quantity').isInt({ min: 1 })
-], (req, res) => {
-    const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
     }
-    const userId = req.user.id;
-    const { productId } = req.params;
-    const { quantity } = req.body;
-    init_1.db.get('SELECT stock_quantity FROM products WHERE id = ?', [productId], (err, product) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-        if (product.stock_quantity < quantity) {
-            return res.status(400).json({ error: 'Insufficient stock' });
-        }
-        init_1.db.run('UPDATE cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND product_id = ?', [quantity, userId, productId], function (err) {
+    catch (error) {
+        console.error('Error updating cart item:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+router.delete('/remove/:itemId', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { itemId } = req.params;
+        init_1.db.run('DELETE FROM cart_items WHERE id = ? AND user_id = ?', [itemId, userId], function (err) {
             if (err) {
-                return res.status(500).json({ error: 'Failed to update cart' });
+                console.error('Error removing cart item:', err);
+                return res.status(500).json({ error: 'Database error' });
             }
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Cart item not found' });
             }
             res.json({
                 success: true,
-                message: 'Cart updated successfully',
-                data: { quantity }
+                message: 'Item removed from cart successfully'
             });
         });
-    });
+    }
+    catch (error) {
+        console.error('Error removing cart item:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
-router.delete('/remove/:productId', (req, res) => {
-    const userId = req.user.id;
-    const { productId } = req.params;
-    init_1.db.run('DELETE FROM cart_items WHERE user_id = ? AND product_id = ?', [userId, productId], function (err) {
-        if (err) {
-            return res.status(500).json({ error: 'Failed to remove from cart' });
-        }
-        if (this.changes === 0) {
-            return res.status(404).json({ error: 'Cart item not found' });
-        }
-        res.json({
-            success: true,
-            message: 'Item removed from cart successfully'
+router.delete('/clear', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        init_1.db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], function (err) {
+            if (err) {
+                console.error('Error clearing cart:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            res.json({
+                success: true,
+                message: 'Cart cleared successfully'
+            });
         });
-    });
-});
-router.delete('/clear', (req, res) => {
-    const userId = req.user.id;
-    init_1.db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], function (err) {
-        if (err) {
-            return res.status(500).json({ error: 'Failed to clear cart' });
-        }
-        res.json({
-            success: true,
-            message: 'Cart cleared successfully',
-            data: { removed: this.changes }
-        });
-    });
+    }
+    catch (error) {
+        console.error('Error clearing cart:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 exports.default = router;
 //# sourceMappingURL=cart.js.map

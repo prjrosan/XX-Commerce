@@ -1,280 +1,290 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { db } from '../database/init';
-import { Order, OrderItem } from '../types';
-import { AuthRequest } from '../middleware/auth';
+import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Get user's orders
-router.get('/', (req: AuthRequest, res: Response) => {
-  const userId = req.user!.id;
-
-  const query = `
-    SELECT o.*, 
-           GROUP_CONCAT(p.title || ' (x' || oi.quantity || ')') as items_summary
-    FROM orders o
-    LEFT JOIN order_items oi ON o.id = oi.order_id
-    LEFT JOIN products p ON oi.product_id = p.id
-    WHERE o.user_id = ?
-    GROUP BY o.id
-    ORDER BY o.created_at DESC
-  `;
-
-  db.all(query, [userId], (err, orders: Order[]) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    res.json({
-      success: true,
-      data: orders
+router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    
+    const query = `
+      SELECT 
+        o.id,
+        o.user_id,
+        o.total_amount,
+        o.status,
+        o.payment_status,
+        o.shipping_address,
+        o.created_at,
+        o.updated_at,
+        GROUP_CONCAT(p.title || ' (x' || oi.quantity || ')') as items_summary
+      FROM orders o
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE o.user_id = ?
+      GROUP BY o.id
+      ORDER BY o.created_at DESC
+    `;
+    
+    db.all(query, [userId], (err, orders) => {
+      if (err) {
+        console.error('Error getting orders:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+              res.json({
+          success: true,
+          data: (orders || []).map((order: any) => ({
+            ...order,
+            items_summary: order.items_summary || 'No items'
+          }))
+        });
     });
-  });
+    
+  } catch (error) {
+    console.error('Error getting orders:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Get order by ID with items
-router.get('/:id', (req: AuthRequest, res: Response) => {
-  const userId = req.user!.id;
-  const { id } = req.params;
-
-  // Get order
-  db.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [id, userId], (err, order: Order) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    // Get order items
-    const itemsQuery = `
-      SELECT oi.*, p.title, p.image_url
-      FROM order_items oi
-      JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = ?
-    `;
-
-    db.all(itemsQuery, [id], (err, items: OrderItem[]) => {
+router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { id } = req.params;
+    
+    // Get order details
+    db.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [id, userId], (err, order) => {
       if (err) {
+        console.error('Error getting order:', err);
         return res.status(500).json({ error: 'Database error' });
       }
-
-      res.json({
-        success: true,
-        data: {
-          ...order,
-          items
+      
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      // Get order items
+      const itemsQuery = `
+        SELECT 
+          oi.id,
+          oi.order_id,
+          oi.product_id,
+          oi.quantity,
+          oi.price,
+          p.title,
+          p.description,
+          p.category,
+          p.image_url
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+      `;
+      
+      db.all(itemsQuery, [id], (err, items) => {
+        if (err) {
+          console.error('Error getting order items:', err);
+          return res.status(500).json({ error: 'Database error' });
         }
+        
+        res.json({
+          success: true,
+          data: {
+            ...(order as any),
+            items: items || []
+          }
+        });
       });
     });
-  });
+    
+  } catch (error) {
+    console.error('Error getting order:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// Create order (checkout)
-router.post('/', [
-  body('shipping_address').trim().isLength({ min: 5 }).withMessage('Shipping address must be at least 5 characters')
-], (req: AuthRequest, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    console.log('Validation errors:', errors.array());
-    return res.status(400).json({ 
-      error: 'Validation failed', 
-      details: errors.array(),
-      message: 'Please check your shipping address (minimum 5 characters required)'
-    });
-  }
-
-  const userId = req.user!.id;
-  const { shipping_address } = req.body;
-
-  console.log('Creating order for user:', userId, 'with address:', shipping_address);
-
-  // First, get cart items for this user
-  db.all(
-    `SELECT ci.*, p.price, p.stock_quantity, p.title 
-     FROM cart_items ci 
-     JOIN products p ON ci.product_id = p.id 
-     WHERE ci.user_id = ?`,
-    [userId],
-    (err, cartItems: any[]) => {
+// Create order
+router.post('/', authenticateToken, [
+  body('shipping_address').trim().isLength({ min: 1 })
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const userId = req.user!.id;
+    const { shipping_address } = req.body;
+    
+    // Get user's cart items
+    const cartQuery = `
+      SELECT 
+        ci.product_id,
+        ci.quantity,
+        p.price,
+        p.stock_quantity
+      FROM cart_items ci
+      JOIN products p ON ci.product_id = p.id
+      WHERE ci.user_id = ?
+    `;
+    
+    db.all(cartQuery, [userId], (err, cartItems) => {
       if (err) {
-        return res.status(500).json({ error: 'Failed to fetch cart items' });
+        console.error('Error getting cart items:', err);
+        return res.status(500).json({ error: 'Database error' });
       }
-
+      
       if (!cartItems || cartItems.length === 0) {
-        console.log('Empty cart for user:', userId);
-        return res.status(400).json({ 
-          error: 'Cart is empty', 
-          message: 'Please add items to your cart before checkout',
-          userId: userId
-        });
+        return res.status(400).json({ error: 'Cart is empty' });
       }
-
-      const items = cartItems.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-        stock_quantity: item.stock_quantity
-      }));
-
-  // Start transaction
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
-
-    // Calculate total and validate stock
-    let totalAmount = 0;
-    let hasError = false;
-
-    const validateItems = () => {
-      return new Promise((resolve, reject) => {
-        let processed = 0;
-        
-        items.forEach((item: any) => {
-          db.get('SELECT price, stock_quantity FROM products WHERE id = ?', [item.product_id], (err, product) => {
-            if (err) {
-              hasError = true;
-              reject(err);
-              return;
-            }
-
-            if (!product) {
-              hasError = true;
-              reject(new Error(`Product ${item.product_id} not found`));
-              return;
-            }
-
-            if ((product as any).stock_quantity < item.quantity) {
-              hasError = true;
-              reject(new Error(`Insufficient stock for product ${item.product_id}`));
-              return;
-            }
-
-            totalAmount += (product as any).price * item.quantity;
-            processed++;
-
-            if (processed === items.length) {
-              resolve(totalAmount);
-            }
+      
+      // Check stock availability
+      for (const item of cartItems) {
+        if ((item as any).stock_quantity < (item as any).quantity) {
+          return res.status(400).json({ 
+            error: `Insufficient stock for product ID ${(item as any).product_id}. Available: ${(item as any).stock_quantity}, Requested: ${(item as any).quantity}` 
           });
-        });
-      });
-    };
-
-    validateItems()
-      .then(() => {
-        if (hasError) {
-          db.run('ROLLBACK');
-          return;
         }
-
+      }
+      
+      // Calculate total
+      const total = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+      
+      // Start transaction
+      db.serialize(() => {
         // Create order
-        db.run(
-          'INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)',
-          [userId, totalAmount, shipping_address],
+        db.run('INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)', 
+          [userId, total, shipping_address], 
           function(err) {
             if (err) {
-              db.run('ROLLBACK');
-              return res.status(500).json({ error: 'Failed to create order' });
+              console.error('Error creating order:', err);
+              return res.status(500).json({ error: 'Database error' });
             }
-
+            
             const orderId = this.lastID;
-
-            // Create order items and update stock
-            let itemsProcessed = 0;
-            items.forEach((item: any) => {
-              db.run(
-                'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, (SELECT price FROM products WHERE id = ?))',
-                [orderId, item.product_id, item.quantity, item.product_id],
+            
+            // Create order items and update stock sequentially
+            let completed = 0;
+            const totalItems = cartItems.length;
+            
+            const processNextItem = (index: number) => {
+              if (index >= totalItems) {
+                // All items processed, clear cart and return response
+                db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], (err) => {
+                  if (err) {
+                    console.error('Error clearing cart:', err);
+                  }
+                  
+                  res.status(201).json({
+                    success: true,
+                    message: 'Order created successfully',
+                    data: {
+                      order: {
+                        id: orderId,
+                        user_id: userId,
+                        total_amount: total,
+                        status: 'pending',
+                        payment_status: 'pending',
+                        shipping_address,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                      }
+                    }
+                  });
+                });
+                return;
+              }
+              
+              const item = cartItems[index] as any;
+              
+              // Insert order item
+              db.run('INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)', 
+                [orderId, item.product_id, item.quantity, item.price], 
                 function(err) {
                   if (err) {
-                    db.run('ROLLBACK');
-                    return res.status(500).json({ error: 'Failed to create order items' });
+                    console.error('Error creating order item:', err);
+                    return res.status(500).json({ error: 'Database error' });
                   }
-
+                  
                   // Update stock
-                  db.run(
-                    'UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?',
-                    [item.quantity, item.product_id],
+                  db.run('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', 
+                    [item.quantity, item.product_id], 
                     function(err) {
                       if (err) {
-                        db.run('ROLLBACK');
-                        return res.status(500).json({ error: 'Failed to update stock' });
+                        console.error('Error updating stock:', err);
+                        return res.status(500).json({ error: 'Database error' });
                       }
-
-                      itemsProcessed++;
-                      if (itemsProcessed === items.length) {
-                        // Clear cart
-                        db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], function(err) {
-                          if (err) {
-                            db.run('ROLLBACK');
-                            return res.status(500).json({ error: 'Failed to clear cart' });
-                          }
-
-                          db.run('COMMIT');
-                          res.status(201).json({
-                            success: true,
-                            message: 'Order created successfully',
-                            order: {
-                              id: orderId,
-                              total_amount: totalAmount,
-                              user_id: userId,
-                              shipping_address: shipping_address,
-                              status: 'pending',
-                              payment_status: 'pending'
-                            }
-                          });
-                        });
-                      }
+                      
+                      completed++;
+                      // Process next item
+                      processNextItem(index + 1);
                     }
                   );
                 }
               );
-            });
+            };
+            
+            // Start processing items
+            processNextItem(0);
           }
         );
-      })
-      .catch((error) => {
-        db.run('ROLLBACK');
-        res.status(400).json({ error: error.message });
       });
-  });
-    }
-  );
+    });
+    
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// Update order status (admin only)
-router.put('/:id/status', [
-  body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled'])
-], (req: AuthRequest, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { id } = req.params;
-  const { status } = req.body;
-
-  db.run(
-    'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [status, id],
-    function(err) {
+// Update order status (Admin only)
+router.patch('/:id/status', authenticateToken, [
+  body('status').isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+  body('payment_status').optional().isIn(['pending', 'processing', 'completed', 'failed', 'refunded'])
+], async (req: AuthRequest, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const { id } = req.params;
+    const { status, payment_status } = req.body;
+    
+    // Check if user is admin
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    const updateData: any = { status };
+    if (payment_status) updateData.payment_status = payment_status;
+    
+    const updateFields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
+    const updateValues = [...Object.values(updateData), id];
+    
+    db.run(`UPDATE orders SET ${updateFields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, updateValues, function(err) {
       if (err) {
-        return res.status(500).json({ error: 'Failed to update order status' });
+        console.error('Error updating order:', err);
+        return res.status(500).json({ error: 'Database error' });
       }
-
+      
       if (this.changes === 0) {
         return res.status(404).json({ error: 'Order not found' });
       }
-
+      
       res.json({
         success: true,
-        message: 'Order status updated successfully',
-        data: { status }
+        message: 'Order updated successfully'
       });
-    }
-  );
+    });
+    
+  } catch (error) {
+    console.error('Error updating order:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 export default router; 

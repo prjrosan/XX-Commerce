@@ -41,12 +41,12 @@ export default function RegisterPage() {
     clearError()
 
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        accountType: formData.accountType
-      })
+              await register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          accountType: formData.accountType
+        })
       toast.success('Registration successful!')
       navigate('/')
     } catch (error) {

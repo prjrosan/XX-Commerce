@@ -19,9 +19,12 @@ import { authenticateToken } from './middleware/auth';
 import { WebSocketManager } from './services/websocket';
 
 // Load environment variables
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
+dotenv.config();
+console.log('🔧 Environment loaded:');
+console.log('  - NODE_ENV:', process.env.NODE_ENV);
+console.log('  - JWT_SECRET:', process.env.JWT_SECRET ? '***SET***' : 'NOT SET');
+console.log('  - PORT:', process.env.PORT);
+console.log('  - CORS_ORIGIN:', process.env.CORS_ORIGIN);
 
 const app = express();
 const server = createServer(app);
@@ -37,7 +40,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
 app.use(limiter);
@@ -99,10 +102,10 @@ app.use('*', (req, res) => {
 });
 
 // Initialize database and start server
-async function startServer() {
-  try {
-    await initializeDatabase();
-    console.log('✅ Database initialized successfully');
+  async function startServer() {
+    try {
+      await initializeDatabase();
+      console.log('✅ Database initialized successfully');
     
     server.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);

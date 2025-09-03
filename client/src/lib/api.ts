@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 const getApiUrl = () => {
   // Check for Vercel environment variable
   if (import.meta.env.VITE_API_URL) {
+    console.log('🌐 Using VITE_API_URL:', import.meta.env.VITE_API_URL)
     return import.meta.env.VITE_API_URL
   }
   
@@ -12,10 +13,12 @@ const getApiUrl = () => {
   if (window.location.hostname !== 'localhost') {
     // You can set a default production API URL here
     // For now, we'll use a placeholder that will show an error
+    console.log('🌐 Using production fallback URL')
     return 'https://your-backend-api.com/api'
   }
   
   // Local development fallback
+  console.log('🌐 Using local development URL: http://localhost:3001/api')
   return 'http://localhost:3001/api'
 }
 

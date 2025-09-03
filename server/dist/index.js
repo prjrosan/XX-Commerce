@@ -23,9 +23,12 @@ const chat_1 = __importDefault(require("./routes/chat"));
 const ratings_1 = __importDefault(require("./routes/ratings"));
 const auth_2 = require("./middleware/auth");
 const websocket_1 = require("./services/websocket");
-if (process.env.NODE_ENV !== 'production') {
-    dotenv_1.default.config();
-}
+dotenv_1.default.config();
+console.log('🔧 Environment loaded:');
+console.log('  - NODE_ENV:', process.env.NODE_ENV);
+console.log('  - JWT_SECRET:', process.env.JWT_SECRET ? '***SET***' : 'NOT SET');
+console.log('  - PORT:', process.env.PORT);
+console.log('  - CORS_ORIGIN:', process.env.CORS_ORIGIN);
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const port = process.env.PORT || 3001;
@@ -36,7 +39,7 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true
 }));
 app.use(limiter);
