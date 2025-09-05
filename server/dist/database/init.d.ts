@@ -1,5 +1,5 @@
-import sqlite3 from 'sqlite3';
-export declare const db: sqlite3.Database;
+declare let db: any;
 export declare function initializeDatabase(): Promise<void>;
 export declare function closeDatabase(): void;
+export { db };
 //# sourceMappingURL=init.d.ts.map

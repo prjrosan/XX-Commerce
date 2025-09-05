@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 echo "Starting build process..."
+echo "Installing root dependencies..."
+npm install
+echo "Installing server dependencies..."
 cd server
-echo "Installing dependencies..."
 npm install
 echo "Building TypeScript..."
 npm run build
