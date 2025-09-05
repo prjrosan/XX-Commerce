@@ -35,12 +35,7 @@ services:
     name: xx-commerce
     env: static
     plan: free
-    buildCommand: |
-      echo "Building static site..."
-      cd client
-      npm install
-      npm run build
-      echo "Static site build completed!"
+    buildCommand: ./build-client.sh
     staticPublishPath: ./client/dist
     envVars:
       - key: VITE_API_URL
