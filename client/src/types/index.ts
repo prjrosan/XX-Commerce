@@ -20,7 +20,6 @@ export interface Product {
   created_at: string;
   updated_at: string;
   customization_options?: Record<string, string[]>;
-  customization_options?: any;
 }
 
 export interface CartItem {
