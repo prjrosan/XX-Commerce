@@ -95,7 +95,7 @@ async function startServer() {
         server.listen(port, () => {
             console.log(`🚀 Server running on port ${port}`);
             console.log(`📱 Frontend: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
-            console.log(`🔌 WebSocket: ws://localhost:${port}`);
+            console.log(`🔌 WebSocket: ws://0.0.0.0:${port}`);
         });
     }
     catch (error) {

@@ -107,7 +107,7 @@ app.use('*', (req, res) => {
       await initializeDatabase();
       console.log('✅ Database initialized successfully');
     
-    server.listen(port, () => {
+    server.listen(port, "0.0.0.0", () => {
       console.log(`🚀 Server running on port ${port}`);
       console.log(`📱 Frontend: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
       console.log(`🔌 WebSocket: ws://0.0.0.0:${port}`);

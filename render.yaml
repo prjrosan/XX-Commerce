@@ -11,12 +11,16 @@ services:
       echo "Files in server directory: $(ls -la)"
       echo "Files in dist directory: $(ls -la dist/)"
       echo "NODE_ENV: $NODE_ENV"
+      echo "PORT: $PORT"
+      echo "HOST: $HOST"
       node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: HOST
+        value: 0.0.0.0
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
