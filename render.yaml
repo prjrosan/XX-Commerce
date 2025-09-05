@@ -12,8 +12,13 @@ services:
       cd ..
       echo "Build completed!"
     startCommand: |
-      echo "Starting server..."
+      echo "Starting server in production mode..."
       cd server
+      echo "Current directory: $(pwd)"
+      echo "Files in server directory: $(ls -la)"
+      echo "Files in dist directory: $(ls -la dist/)"
+      echo "NODE_ENV: $NODE_ENV"
+      echo "PORT: $PORT"
       node dist/index.js
     envVars:
       - key: NODE_ENV
