@@ -10,7 +10,7 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
     "vercel-build": "cd client && npm run vercel-build",
-    "start": "cd server && npm start",
+    "start": "cd server && node dist/index.js",
     "render-build": "./build.sh",
     "render-start": "cd server && node dist/index.js"
   },
