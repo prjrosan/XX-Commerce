@@ -3,23 +3,8 @@ services:
     name: xx-commerce-api
     env: node
     plan: free
-    buildCommand: |
-      echo "Starting build process..."
-      npm install
-      cd server
-      npm install
-      npm run build
-      cd ..
-      echo "Build completed!"
-    startCommand: |
-      echo "Starting server in production mode..."
-      cd server
-      echo "Current directory: $(pwd)"
-      echo "Files in server directory: $(ls -la)"
-      echo "Files in dist directory: $(ls -la dist/)"
-      echo "NODE_ENV: $NODE_ENV"
-      echo "PORT: $PORT"
-      node dist/index.js
+    buildCommand: ./deploy.sh
+    startCommand: ./deploy.sh
     envVars:
       - key: NODE_ENV
         value: production

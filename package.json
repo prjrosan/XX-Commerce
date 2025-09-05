@@ -12,7 +12,9 @@
     "vercel-build": "cd client && npm run vercel-build",
     "start": "cd server && node dist/index.js",
     "render-build": "./build.sh",
-    "render-start": "cd server && node dist/index.js"
+    "render-start": "cd server && node dist/index.js",
+    "build-server": "cd server && npm install && npm run build",
+    "start-server": "cd server && node dist/index.js"
   },
   "keywords": [
     "e-commerce",
