@@ -2,7 +2,7 @@
   "name": "xx-commerce",
   "version": "1.0.0",
   "description": "Minimalistic, real-time e-commerce web app",
-  "main": "server/index.js",
+  "main": "server/dist/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
@@ -10,7 +10,9 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
     "vercel-build": "cd client && npm run vercel-build",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start",
+    "render-build": "./build.sh",
+    "render-start": "cd server && node dist/index.js"
   },
   "keywords": [
     "e-commerce",
@@ -20,10 +22,8 @@
   ],
   "author": "XX-Commerce Team",
   "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
   "dependencies": {
-    "@stripe/stripe-js": "^7.8.0"
+    "@stripe/stripe-js": "^7.8.0",
+    "concurrently": "^8.2.2"
   }
 }
