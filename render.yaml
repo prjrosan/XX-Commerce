@@ -3,19 +3,27 @@ services:
     name: xx-commerce-api
     env: node
     plan: free
-    buildCommand: ./deploy.sh
-    startCommand: ./deploy.sh
+    buildCommand: |
+      echo "Building API server..."
+      npm install
+      cd server
+      npm install
+      npm run build
+      cd ..
+      echo "API build completed!"
+    startCommand: |
+      echo "Starting API server..."
+      cd server
+      node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-      - key: HOST
-        value: 0.0.0.0
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://xx-commerce-client.onrender.com
+        value: https://xx-commerce.onrender.com
       - key: MONGODB_URI
         sync: false
       - key: STRIPE_SECRET_KEY
@@ -24,15 +32,15 @@ services:
         sync: false
 
   - type: web
-    name: xx-commerce-client
+    name: xx-commerce
     env: static
     plan: free
     buildCommand: |
-      echo "Building client..."
+      echo "Building static site..."
       cd client
       npm install
       npm run build
-      echo "Client build completed!"
+      echo "Static site build completed!"
     staticPublishPath: ./client/dist
     envVars:
       - key: VITE_API_URL
