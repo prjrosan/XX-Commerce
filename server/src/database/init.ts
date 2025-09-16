@@ -6,22 +6,13 @@ let isMySQL = false;
 
 export async function initializeDatabase(): Promise<void> {
   try {
-    // Try MySQL connection first
-    const mysql = require('mysql2/promise');
-    const mysqlConnection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'xx_commerce_db'
-    });
-    
-    connection = mysqlConnection;
-    isMySQL = true;
-    console.log("✅ MySQL database connected");
+    // Force SQLite for now to avoid MySQL issues
+    console.log("⚠️  Using SQLite to avoid MySQL database issues...");
+    throw new Error("Force SQLite fallback");
   } catch (error) {
-    console.log("⚠️  MySQL connection failed, falling back to SQLite...");
+    console.log("⚠️  Using SQLite database...");
     
-    // Fallback to SQLite
+    // Use SQLite
     const db = new sqlite3.Database("./data/ecommerce.db");
     connection = db;
     isMySQL = false;

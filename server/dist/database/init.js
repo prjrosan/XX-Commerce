@@ -11,15 +11,15 @@ let connection = null;
 let isMySQL = false;
 async function initializeDatabase() {
     try {
-        console.log("⚠️  Using SQLite for admin login fix...");
+        console.log("⚠️  Using SQLite to avoid MySQL database issues...");
         throw new Error("Force SQLite fallback");
     }
     catch (error) {
-        console.log("⚠️  Falling back to SQLite...");
+        console.log("⚠️  Using SQLite database...");
         const db = new sqlite3_1.default.Database("./data/ecommerce.db");
         connection = db;
         isMySQL = false;
-        console.log("✅ SQLite fallback database initialized");
+        console.log("✅ SQLite database initialized");
     }
 }
 async function createMySQLTables() {

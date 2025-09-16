@@ -87,8 +87,15 @@ router.post("/login", [
 
     const user = users[0] as any;
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // Check password (handle both bcrypt and plain text for demo)
+    let isValidPassword = false;
+    try {
+      isValidPassword = await bcrypt.compare(password, user.password);
+    } catch (error) {
+      // If bcrypt fails, check for plain text password (for demo users)
+      isValidPassword = password === user.password;
+    }
+    
     if (!isValidPassword) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
