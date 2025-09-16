@@ -26,10 +26,6 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('=== FORM SUBMIT DEBUG ===')
-    console.log('Form submitted with payment method:', paymentMethod)
-    console.log('PayPay phone:', paypayPhone)
-    
     // Validate required fields based on payment method
     if (paymentMethod === 'paypay' && !paypayPhone.trim()) {
       toast.error('Please enter your PayPay phone number')
@@ -58,10 +54,7 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
       }
     }
     
-    console.log('SimplePaymentForm submitting:', paymentData)
-    console.log('Calling onSubmit function...')
     onSubmit(paymentData)
-    console.log('onSubmit function called successfully')
   }
 
   return (

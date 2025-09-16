@@ -8,12 +8,6 @@ const router = express.Router()
 // Process payment for an order
 router.post('/process/:orderId', authenticateToken, async (req, res) => {
   try {
-    console.log('=== PAYMENT PROCESSING DEBUG ===')
-    console.log('Order ID:', req.params.orderId)
-    console.log('Payment method:', req.body.payment_method)
-    console.log('Payment details:', req.body.payment_details)
-    console.log('User ID:', (req as any).user.id)
-    
     const { orderId } = req.params
     const { payment_method, payment_details } = req.body
     const userId = (req as any).user.id

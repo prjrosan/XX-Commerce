@@ -68,24 +68,18 @@ router.post("/login", [
   body("password").isLength({ min: 6 })
 ], async (req: Request, res: Response) => {
   try {
-    console.log("🔐 Login attempt:", { email: req.body.email, hasPassword: !!req.body.password });
-    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log("❌ Validation errors:", errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { email, password } = req.body;
-    console.log("🔍 Looking up user:", email);
 
     // Find user by email
     const [users] = await db!.execute(
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
-    
-    console.log("📊 Database result:", { usersCount: users?.length, users: users });
 
     if (!Array.isArray(users) || users.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });
