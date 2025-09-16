@@ -6,15 +6,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const paymentService_1 = require("../services/paymentService");
 const auth_1 = require("../middleware/auth");
+const init_1 = require("../database/init");
 const router = express_1.default.Router();
 router.post('/process/:orderId', auth_1.authenticateToken, async (req, res) => {
     try {
+        console.log('=== PAYMENT PROCESSING DEBUG ===');
+        console.log('Order ID:', req.params.orderId);
+        console.log('Payment method:', req.body.payment_method);
+        console.log('Payment details:', req.body.payment_details);
+        console.log('User ID:', req.user.id);
         const { orderId } = req.params;
         const { payment_method, payment_details } = req.body;
         const userId = req.user.id;
-        const db = require('../database/init').db;
         const order = await new Promise((resolve, reject) => {
-            db.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, userId], (err, order) => {
+            init_1.db.get('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, userId], (err, order) => {
                 if (err)
                     reject(err);
                 else

@@ -11,6 +11,10 @@ interface SimplePaymentFormProps {
 export default function SimplePaymentForm({ amount, onSubmit, loading = false }: SimplePaymentFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>('credit_card')
   const [paypayPhone, setPaypayPhone] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardHolder, setCardHolder] = useState('')
+  const [cvv, setCvv] = useState('')
+  const [expiryDate, setExpiryDate] = useState('')
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ja-JP', {
@@ -26,20 +30,31 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
     console.log('Form submitted with payment method:', paymentMethod)
     console.log('PayPay phone:', paypayPhone)
     
-    // Validate PayPay phone number if PayPay is selected
+    // Validate required fields based on payment method
     if (paymentMethod === 'paypay' && !paypayPhone.trim()) {
       toast.error('Please enter your PayPay phone number')
       return
     }
     
-    // Simple payment data that works with our backend
+    if ((paymentMethod === 'credit_card' || paymentMethod === 'debit_card')) {
+      if (!cardNumber.trim() || !cardHolder.trim() || !cvv.trim() || !expiryDate.trim()) {
+        toast.error('Please fill in all card details')
+        return
+      }
+    }
+    
+    // Payment data that works with our backend
     const paymentData = {
       payment_method: paymentMethod,
       payment_details: {
         method: paymentMethod,
         amount: amount,
         currency: 'JPY',
-        paypay_phone: paymentMethod === 'paypay' ? paypayPhone : undefined
+        paypay_phone: paymentMethod === 'paypay' ? paypayPhone : undefined,
+        card_number: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? cardNumber : undefined,
+        card_holder: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? cardHolder : undefined,
+        cvv: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? cvv : undefined,
+        expiry_date: (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') ? expiryDate : undefined
       }
     }
     
@@ -173,7 +188,7 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
         {/* Payment Method Details */}
         <div className="p-4 bg-gray-50 rounded-lg">
           {paymentMethod === 'credit_card' && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               <h4 className="font-medium text-gray-900">Credit Card Payment</h4>
               <p className="text-sm text-gray-600">
                 💳 Test payment with instant processing. No real money will be charged.
@@ -181,17 +196,135 @@ export default function SimplePaymentForm({ amount, onSubmit, loading = false }:
               <div className="text-xs text-green-600 font-medium">
                 ✅ Success rate: 90% (simulated)
               </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Card Number
+                  </label>
+                  <input
+                    type="text"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    placeholder="1234 5678 9012 3456"
+                    className="input w-full"
+                    maxLength={19}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="text"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                      placeholder="MM/YY"
+                      className="input w-full"
+                      maxLength={5}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CVV
+                    </label>
+                    <input
+                      type="text"
+                      value={cvv}
+                      onChange={(e) => setCvv(e.target.value)}
+                      placeholder="123"
+                      className="input w-full"
+                      maxLength={4}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cardholder Name
+                  </label>
+                  <input
+                    type="text"
+                    value={cardHolder}
+                    onChange={(e) => setCardHolder(e.target.value)}
+                    placeholder="John Doe"
+                    className="input w-full"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
           {paymentMethod === 'debit_card' && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               <h4 className="font-medium text-gray-900">Debit Card Payment</h4>
               <p className="text-sm text-gray-600">
                 💚 Direct bank account payment with instant processing.
               </p>
               <div className="text-xs text-green-600 font-medium">
                 ✅ Success rate: 90% (simulated)
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Card Number
+                  </label>
+                  <input
+                    type="text"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    placeholder="1234 5678 9012 3456"
+                    className="input w-full"
+                    maxLength={19}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="text"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                      placeholder="MM/YY"
+                      className="input w-full"
+                      maxLength={5}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CVV
+                    </label>
+                    <input
+                      type="text"
+                      value={cvv}
+                      onChange={(e) => setCvv(e.target.value)}
+                      placeholder="123"
+                      className="input w-full"
+                      maxLength={4}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cardholder Name
+                  </label>
+                  <input
+                    type="text"
+                    value={cardHolder}
+                    onChange={(e) => setCardHolder(e.target.value)}
+                    placeholder="John Doe"
+                    className="input w-full"
+                  />
+                </div>
               </div>
             </div>
           )}

@@ -12,37 +12,37 @@ router.use(requireAdmin)
 router.get('/stats', (req: Request, res: Response) => {
   try {
     // Get total products
-    db.get('SELECT COUNT(*) as total FROM products', (err, productResult: any) => {
+    db.get('SELECT COUNT(*) as total FROM products', [], (err, productResult: any) => {
       if (err) {
         return res.status(500).json({ error: 'Database error' })
       }
 
       // Get total orders
-      db.get('SELECT COUNT(*) as total FROM orders', (err, orderResult: any) => {
+      db.get('SELECT COUNT(*) as total FROM orders', [], (err, orderResult: any) => {
         if (err) {
           return res.status(500).json({ error: 'Database error' })
         }
 
         // Get total revenue
-        db.get('SELECT SUM(total_amount) as total FROM orders WHERE status != "cancelled"', (err, revenueResult: any) => {
+        db.get('SELECT SUM(total_amount) as total FROM orders WHERE status != "cancelled"', [], (err, revenueResult: any) => {
           if (err) {
             return res.status(500).json({ error: 'Database error' })
           }
 
           // Get total customers
-          db.get('SELECT COUNT(*) as total FROM users WHERE role = "user"', (err, customerResult: any) => {
+          db.get('SELECT COUNT(*) as total FROM users WHERE role = "user"', [], (err, customerResult: any) => {
             if (err) {
               return res.status(500).json({ error: 'Database error' })
             }
 
             // Get low stock products
-            db.get('SELECT COUNT(*) as total FROM products WHERE stock_quantity < 10', (err, lowStockResult: any) => {
+            db.get('SELECT COUNT(*) as total FROM products WHERE stock < 10', [], (err, lowStockResult: any) => {
               if (err) {
                 return res.status(500).json({ error: 'Database error' })
               }
 
               // Get pending orders
-              db.get('SELECT COUNT(*) as total FROM orders WHERE status = "pending"', (err, pendingResult: any) => {
+              db.get('SELECT COUNT(*) as total FROM orders WHERE status = "pending"', [], (err, pendingResult: any) => {
                 if (err) {
                   return res.status(500).json({ error: 'Database error' })
                 }
@@ -78,7 +78,7 @@ router.get('/orders', (req: Request, res: Response) => {
     ORDER BY o.created_at DESC
   `
 
-  db.all(query, (err, orders: Order[]) => {
+  db.all(query, [], (err, orders: Order[]) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' })
     }
@@ -89,7 +89,7 @@ router.get('/orders', (req: Request, res: Response) => {
 
 // Get all customers
 router.get('/customers', (req: Request, res: Response) => {
-  db.all('SELECT id, name, email, role, created_at, updated_at FROM users ORDER BY created_at DESC', (err, customers: User[]) => {
+  db.all('SELECT id, name, email, role, created_at, updated_at FROM users ORDER BY created_at DESC', [], (err, customers: User[]) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' })
     }
@@ -193,15 +193,15 @@ router.get('/customers/:id', (req: Request, res: Response) => {
 // Update product stock
 router.put('/products/:id/stock', (req: Request, res: Response) => {
   const { id } = req.params
-  const { stock_quantity } = req.body
+  const { stock } = req.body
 
-  if (typeof stock_quantity !== 'number' || stock_quantity < 0) {
+  if (typeof stock !== 'number' || stock < 0) {
     return res.status(400).json({ error: 'Invalid stock quantity' })
   }
 
   db.run(
-    'UPDATE products SET stock_quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [stock_quantity, id],
+    'UPDATE products SET stock = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [stock, id],
     function(err) {
       if (err) {
         return res.status(500).json({ error: 'Failed to update stock' })
@@ -249,7 +249,7 @@ router.get('/products/low-stock', (req: Request, res: Response) => {
   const { threshold = 10 } = req.query
 
   db.all(
-    'SELECT * FROM products WHERE stock_quantity < ? ORDER BY stock_quantity ASC',
+    'SELECT * FROM products WHERE stock < ? ORDER BY stock ASC',
     [threshold],
     (err, products: Product[]) => {
       if (err) {
@@ -298,7 +298,7 @@ router.get('/analytics/sales', (req: Request, res: Response) => {
     ORDER BY date DESC
   `
 
-  db.all(query, (err, analytics) => {
+  db.all(query, [], (err, analytics) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' })
     }

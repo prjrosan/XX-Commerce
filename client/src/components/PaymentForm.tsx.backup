@@ -9,7 +9,7 @@ interface PaymentFormProps {
 }
 
 export default function PaymentForm({ amount, onSubmit, loading = false }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'debit_card' | 'paypal' | 'paypay' | 'bank_transfer' | 'banking' | 'cash_on_delivery' | 'konbini'>('credit_card')
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer' | 'cash_on_delivery'>('credit_card')
   const [formData, setFormData] = useState({
     card_number: '',
     card_holder: '',
@@ -17,11 +17,6 @@ export default function PaymentForm({ amount, onSubmit, loading = false }: Payme
     expiry_year: '',
     cvv: '',
     paypal_email: '',
-    paypay_phone: '',
-    paypay_email: '',
-    banking_username: '',
-    banking_password: '',
-    konbini_store: '',
     bank_name: '',
     account_number: ''
   })

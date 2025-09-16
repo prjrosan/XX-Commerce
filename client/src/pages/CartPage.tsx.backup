@@ -1,11 +1,11 @@
-import { useCartStore } from "../store/cart"
-import { Trash2, Minus, Plus } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useCartStore } from '../store/cart'
+import { Trash2, Minus, Plus } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price)
@@ -58,13 +58,13 @@ export default function CartPage() {
             <div key={item.id} className="card p-4">
               <div className="flex space-x-4">
                 <img
-                  src={item.product?.image_url || "https://via.placeholder.com/100x100?text=Product"}
-                  alt={item.product?.title || "Product"}
+                  src={item.product?.image_url || 'https://via.placeholder.com/100x100?text=Product'}
+                  alt={item.product?.title}
                   className="h-24 w-24 object-cover rounded"
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">
-                    {item.product?.title || "Unknown Product"}
+                    {item.product?.title}
                   </h3>
                   <p className="text-primary-600 font-bold">
                     {formatPrice(item.product?.price || 0)}
@@ -104,19 +104,19 @@ export default function CartPage() {
         <div className="card p-6 h-fit">
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
           <div className="space-y-2 mb-4">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>{formatPrice(total)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Shipping</span>
-              <span>Free</span>
-            </div>
-            <hr />
-            <div className="flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>{formatPrice(total)}</span>
-            </div>
+                            <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span>Free</span>
+                </div>
+                <hr />
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
           </div>
           <Link
             to="/checkout"
@@ -128,4 +128,4 @@ export default function CartPage() {
       </div>
     </div>
   )
-}
+} 

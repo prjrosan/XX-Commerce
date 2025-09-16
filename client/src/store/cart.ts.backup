@@ -44,7 +44,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   addToCart: async (productId: number, quantity: number) => {
     set({ isLoading: true, error: null })
     try {
-      await api.post("/cart/add", { product_id: productId, quantity })
+      await api.post("/cart", { product_id: productId, quantity })
       await get().loadCart()
     } catch (error: any) {
       set({ 
@@ -58,15 +58,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   updateQuantity: async (productId: number, quantity: number) => {
     set({ isLoading: true, error: null })
     try {
-      // First get the cart item ID for this product
-      const cartResponse = await api.get<ApiResponse<CartResponse>>("/cart")
-      const cartItem = cartResponse.data.data?.items.find(item => item.product_id === productId)
-      
-      if (!cartItem) {
-        throw new Error("Item not found in cart")
-      }
-      
-      await api.put(`/cart/update/${cartItem.id}`, { quantity })
+      await api.put(`/cart/${productId}`, { quantity })
       await get().loadCart()
     } catch (error: any) {
       set({ 
@@ -80,15 +72,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeFromCart: async (productId: number) => {
     set({ isLoading: true, error: null })
     try {
-      // First get the cart item ID for this product
-      const cartResponse = await api.get<ApiResponse<CartResponse>>("/cart")
-      const cartItem = cartResponse.data.data?.items.find(item => item.product_id === productId)
-      
-      if (!cartItem) {
-        throw new Error("Item not found in cart")
-      }
-      
-      await api.delete(`/cart/remove/${cartItem.id}`)
+      await api.delete(`/cart/${productId}`)
       await get().loadCart()
     } catch (error: any) {
       set({ 
@@ -102,7 +86,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   clearCart: async () => {
     set({ isLoading: true, error: null })
     try {
-      await api.delete("/cart/clear")
+      await api.delete("/cart")
       set({ items: [], total: 0, isLoading: false })
     } catch (error: any) {
       set({ 

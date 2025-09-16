@@ -42,7 +42,7 @@ export default function AdminPage() {
       const response = await api.get('/products')
       setStats(prev => ({
         ...prev,
-        totalProducts: response.data.data.pagination.total
+        totalProducts: response.data.data.products.length
       }))
     } catch (error) {
       console.error('Failed to load stats:', error)
@@ -54,7 +54,7 @@ export default function AdminPage() {
       setLoading(true)
       const response = await api.get('/products?limit=100')
 
-      setProducts(response.data.data.products)
+      setProducts(response.data.data.products || [])
     } catch (error) {
       console.error('Load products error:', error)
       toast.error('Failed to load products')

@@ -7,27 +7,27 @@ const router = (0, express_1.Router)();
 router.use(auth_1.requireAdmin);
 router.get('/stats', (req, res) => {
     try {
-        init_1.db.get('SELECT COUNT(*) as total FROM products', (err, productResult) => {
+        init_1.db.get('SELECT COUNT(*) as total FROM products', [], (err, productResult) => {
             if (err) {
                 return res.status(500).json({ error: 'Database error' });
             }
-            init_1.db.get('SELECT COUNT(*) as total FROM orders', (err, orderResult) => {
+            init_1.db.get('SELECT COUNT(*) as total FROM orders', [], (err, orderResult) => {
                 if (err) {
                     return res.status(500).json({ error: 'Database error' });
                 }
-                init_1.db.get('SELECT SUM(total_amount) as total FROM orders WHERE status != "cancelled"', (err, revenueResult) => {
+                init_1.db.get('SELECT SUM(total_amount) as total FROM orders WHERE status != "cancelled"', [], (err, revenueResult) => {
                     if (err) {
                         return res.status(500).json({ error: 'Database error' });
                     }
-                    init_1.db.get('SELECT COUNT(*) as total FROM users WHERE role = "user"', (err, customerResult) => {
+                    init_1.db.get('SELECT COUNT(*) as total FROM users WHERE role = "user"', [], (err, customerResult) => {
                         if (err) {
                             return res.status(500).json({ error: 'Database error' });
                         }
-                        init_1.db.get('SELECT COUNT(*) as total FROM products WHERE stock_quantity < 10', (err, lowStockResult) => {
+                        init_1.db.get('SELECT COUNT(*) as total FROM products WHERE stock < 10', [], (err, lowStockResult) => {
                             if (err) {
                                 return res.status(500).json({ error: 'Database error' });
                             }
-                            init_1.db.get('SELECT COUNT(*) as total FROM orders WHERE status = "pending"', (err, pendingResult) => {
+                            init_1.db.get('SELECT COUNT(*) as total FROM orders WHERE status = "pending"', [], (err, pendingResult) => {
                                 if (err) {
                                     return res.status(500).json({ error: 'Database error' });
                                 }
@@ -60,7 +60,7 @@ router.get('/orders', (req, res) => {
     LEFT JOIN users u ON o.user_id = u.id
     ORDER BY o.created_at DESC
   `;
-    init_1.db.all(query, (err, orders) => {
+    init_1.db.all(query, [], (err, orders) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
         }
@@ -68,7 +68,7 @@ router.get('/orders', (req, res) => {
     });
 });
 router.get('/customers', (req, res) => {
-    init_1.db.all('SELECT id, name, email, role, created_at, updated_at FROM users ORDER BY created_at DESC', (err, customers) => {
+    init_1.db.all('SELECT id, name, email, role, created_at, updated_at FROM users ORDER BY created_at DESC', [], (err, customers) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
         }
@@ -137,11 +137,11 @@ router.get('/customers/:id', (req, res) => {
 });
 router.put('/products/:id/stock', (req, res) => {
     const { id } = req.params;
-    const { stock_quantity } = req.body;
-    if (typeof stock_quantity !== 'number' || stock_quantity < 0) {
+    const { stock } = req.body;
+    if (typeof stock !== 'number' || stock < 0) {
         return res.status(400).json({ error: 'Invalid stock quantity' });
     }
-    init_1.db.run('UPDATE products SET stock_quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [stock_quantity, id], function (err) {
+    init_1.db.run('UPDATE products SET stock = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [stock, id], function (err) {
         if (err) {
             return res.status(500).json({ error: 'Failed to update stock' });
         }
@@ -169,7 +169,7 @@ router.put('/products/:id/customization', (req, res) => {
 });
 router.get('/products/low-stock', (req, res) => {
     const { threshold = 10 } = req.query;
-    init_1.db.all('SELECT * FROM products WHERE stock_quantity < ? ORDER BY stock_quantity ASC', [threshold], (err, products) => {
+    init_1.db.all('SELECT * FROM products WHERE stock < ? ORDER BY stock ASC', [threshold], (err, products) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
         }
@@ -205,7 +205,7 @@ router.get('/analytics/sales', (req, res) => {
     GROUP BY DATE(created_at)
     ORDER BY date DESC
   `;
-    init_1.db.all(query, (err, analytics) => {
+    init_1.db.all(query, [], (err, analytics) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
         }

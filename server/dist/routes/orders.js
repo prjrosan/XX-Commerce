@@ -128,58 +128,56 @@ router.post('/', auth_1.authenticateToken, [
                 }
             }
             const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            init_1.db.serialize(() => {
-                init_1.db.run('INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)', [userId, total, shipping_address], function (err) {
-                    if (err) {
-                        console.error('Error creating order:', err);
-                        return res.status(500).json({ error: 'Database error' });
-                    }
-                    const orderId = this.lastID;
-                    let completed = 0;
-                    const totalItems = cartItems.length;
-                    const processNextItem = (index) => {
-                        if (index >= totalItems) {
-                            init_1.db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], (err) => {
-                                if (err) {
-                                    console.error('Error clearing cart:', err);
-                                }
-                                res.status(201).json({
-                                    success: true,
-                                    message: 'Order created successfully',
-                                    data: {
-                                        order: {
-                                            id: orderId,
-                                            user_id: userId,
-                                            total_amount: total,
-                                            status: 'pending',
-                                            payment_status: 'pending',
-                                            shipping_address,
-                                            created_at: new Date().toISOString(),
-                                            updated_at: new Date().toISOString()
-                                        }
-                                    }
-                                });
-                            });
-                            return;
-                        }
-                        const item = cartItems[index];
-                        init_1.db.run('INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)', [orderId, item.product_id, item.quantity, item.price], function (err) {
+            init_1.db.run('INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)', [userId, total, shipping_address], function (err) {
+                if (err) {
+                    console.error('Error creating order:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                const orderId = this.lastID;
+                let completed = 0;
+                const totalItems = cartItems.length;
+                const processNextItem = (index) => {
+                    if (index >= totalItems) {
+                        init_1.db.run('DELETE FROM cart_items WHERE user_id = ?', [userId], (err) => {
                             if (err) {
-                                console.error('Error creating order item:', err);
-                                return res.status(500).json({ error: 'Database error' });
+                                console.error('Error clearing cart:', err);
                             }
-                            init_1.db.run('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', [item.quantity, item.product_id], function (err) {
-                                if (err) {
-                                    console.error('Error updating stock:', err);
-                                    return res.status(500).json({ error: 'Database error' });
+                            res.status(201).json({
+                                success: true,
+                                message: 'Order created successfully',
+                                data: {
+                                    order: {
+                                        id: orderId,
+                                        user_id: userId,
+                                        total_amount: total,
+                                        status: 'pending',
+                                        payment_status: 'pending',
+                                        shipping_address,
+                                        created_at: new Date().toISOString(),
+                                        updated_at: new Date().toISOString()
+                                    }
                                 }
-                                completed++;
-                                processNextItem(index + 1);
                             });
                         });
-                    };
-                    processNextItem(0);
-                });
+                        return;
+                    }
+                    const item = cartItems[index];
+                    init_1.db.run('INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)', [orderId, item.product_id, item.quantity, item.price], function (err) {
+                        if (err) {
+                            console.error('Error creating order item:', err);
+                            return res.status(500).json({ error: 'Database error' });
+                        }
+                        init_1.db.run('UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?', [item.quantity, item.product_id], function (err) {
+                            if (err) {
+                                console.error('Error updating stock:', err);
+                                return res.status(500).json({ error: 'Database error' });
+                            }
+                            completed++;
+                            processNextItem(index + 1);
+                        });
+                    });
+                };
+                processNextItem(0);
             });
         });
     }

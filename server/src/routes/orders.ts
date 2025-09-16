@@ -154,11 +154,11 @@ router.post('/', authenticateToken, [
       const total = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
       
       // Start transaction
-      db.serialize(() => {
-        // Create order
-        db.run('INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)', 
-          [userId, total, shipping_address], 
-          function(err) {
+      // Process order items sequentially
+      // Create order
+      db.run('INSERT INTO orders (user_id, total_amount, shipping_address) VALUES (?, ?, ?)', 
+        [userId, total, shipping_address], 
+        function(err) {
             if (err) {
               console.error('Error creating order:', err);
               return res.status(500).json({ error: 'Database error' });
@@ -232,8 +232,6 @@ router.post('/', authenticateToken, [
           }
         );
       });
-    });
-    
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ error: 'Server error' });
