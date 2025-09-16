@@ -33,6 +33,8 @@ A minimalistic, real-time e-commerce web application built with React, TypeScrip
 
 ## Quick Start
 
+### Local Development
+
 1. **Install dependencies:**
    ```bash
    npm run install-all
@@ -46,6 +48,13 @@ A minimalistic, real-time e-commerce web application built with React, TypeScrip
 3. **Open your browser:**
    - Frontend: http://localhost:5173
    - Backend: http://localhost:3001
+
+### Production Deployment
+
+🚀 **Deploy to Render.com** - See [RENDER-DEPLOYMENT-GUIDE.md](./RENDER-DEPLOYMENT-GUIDE.md) for complete deployment instructions.
+
+**Live Demo:** https://xx-commerce.onrender.com  
+**Admin Login:** `admin@new.com` / `admin123`
 
 ## Project Structure
 
